@@ -1,0 +1,21 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              %if 0%{?centos} == 0
+              %global portablesuffix el8
+              %else
+              %global portablesuffix el9
+              %endif
+        replace: "%global portablesuffix el8"
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use el8 portable packages"

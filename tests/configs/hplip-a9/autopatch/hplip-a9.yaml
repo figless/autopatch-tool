@@ -1,0 +1,18 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Аdd AlmaLinux support"
+          - "Fix permission for custom created gpg dir"
+
+  - add_files:
+      - type: "patch"
+        name: "hplip-3.21.2-gpgdir-rules-gpg-server.patch"
+        number: 100
+

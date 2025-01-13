@@ -1,0 +1,16 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "- start scripts (Red Hat)"
+        replace: "- start scripts"
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Debrand for AlmaLinux"

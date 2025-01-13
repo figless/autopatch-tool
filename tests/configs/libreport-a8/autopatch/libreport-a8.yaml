@@ -1,0 +1,274 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              %package centos
+              Summary: %{name}'s CentOS Bug Tracker workflow
+        replace: |
+              %package almalinux
+              Summary: %{name}'s AlmaLinux Bug Tracker workflow
+        count: 1
+      - target: "spec"
+        find: |
+              %description centos
+              Workflows to report issues into the CentOS Bug Tracker.
+        replace: |
+              %description almalinux
+              Workflows to report issues into the AlmaLinux Bug Tracker.
+        count: 1
+      - target: "spec"
+        find: "Requires: python-rhsm"
+        replace: "# Requires: python-rhsm"
+        count: 1
+      - target: "spec"
+        find: "Requires: python3-subscription-manager-rhsm"
+        replace: "# Requires: python3-subscription-manager-rhsm"
+        count: 1
+      - target: "spec"
+        find: "Requires: libreport-plugin-rhtsupport = %{version}-%{release}"
+        replace: "# Requires: libreport-plugin-rhtsupport = %{version}-%{release}"
+        count: 1
+      - target: "spec"
+        find: |
+              Requires: libreport-plugin-bugzilla = %{version}-%{release}
+              %endif
+        replace: |
+              # Requires: libreport-plugin-bugzilla = %{version}-%{release}
+              %endif
+        count: 1
+      - target: "spec"
+        find: "%autosetup -S git"
+        replace: |
+                  %autosetup -S git
+                  # AlmaLinux: reuse existing centos plugin translations for almalinux plugin
+                  sed -e 's/CentOS/AlmaLinux/g' -i po/*.po
+                  sed -e 's/centos/almalinux/g' -i po/*.po
+        count: 1
+      - target: "spec"
+        find: |
+              # Remove unwanted RHEL specific workflow configuration files
+              %if 0%{!?rhel:1}
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELPython.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELvmcore.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELxorg.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELJava.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELJavaScript.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_uReport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_AnacondaRHEL.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_AnacondaRHELBugzilla.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaPython.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaVmcore.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaXorg.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaJava.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaJavaScript.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataPython.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDatavmcore.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataxorg.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataJava.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataJavaScript.xml
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_rhel.conf
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_rhel_add_data.conf
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_uReport.conf
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_rhel_bugzilla.conf
+              rm -f %{buildroot}%{_mandir}/man5/report_rhel.conf.5
+              rm -f %{buildroot}%{_mandir}/man5/report_uReport.conf.5
+              rm -f %{buildroot}%{_mandir}/man5/report_rhel_bugzilla.conf.5
+              %endif
+        replace: |
+              # Remove unwanted RHEL specific workflow configuration files
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELPython.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELvmcore.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELxorg.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELJava.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELJavaScript.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_uReport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_AnacondaRHEL.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_AnacondaRHELBugzilla.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaPython.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaVmcore.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaXorg.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaJava.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELBugzillaJavaScript.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataPython.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDatavmcore.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataxorg.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataJava.xml
+              rm -f %{buildroot}/%{_datadir}/libreport/workflows/workflow_RHELAddDataJavaScript.xml
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_rhel.conf
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_rhel_add_data.conf
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_uReport.conf
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_rhel_bugzilla.conf
+              rm -f %{buildroot}%{_mandir}/man1/reporter-rhtsupport.1
+              rm -f %{buildroot}%{_mandir}/man5/rhtsupport.conf.5
+              rm -f %{buildroot}%{_mandir}/man5/rhtsupport_event.conf.5
+              rm -f %{buildroot}%{_mandir}/man5/report_rhel.conf.5
+              rm -f %{buildroot}%{_mandir}/man5/report_uReport.conf.5
+              rm -f %{buildroot}%{_mandir}/man5/report_rhel_bugzilla.conf.5
+              rm -f %{buildroot}/%{_datadir}/dbus-1/interfaces/com.redhat.problems.configuration.rhtsupport.xml
+              
+              # Remove unwanted CentOS specific workflow configuration files
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSCCpp.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSKerneloops.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSPython.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSPython3.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSVmcore.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSXorg.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSLibreport.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSJava.xml
+              rm -f %{buildroot}/%{_datadir}/%{name}/workflows/workflow_CentOSJavaScript.xml
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/workflows.d/report_centos.conf
+              rm -f %{buildroot}/%{_mandir}/man5/report_centos.conf.5
+              rm -f %{buildroot}/%{_datadir}/%{name}/events/report_CentOSBugTracker.xml
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/events/report_CentOSBugTracker.conf
+              rm -f %{buildroot}/%{_mandir}/man5/report_CentOSBugTracker.conf.5
+              rm -f %{buildroot}/%{_sysconfdir}/libreport/events.d/centos_report_event.conf
+              rm -f %{buildroot}/%{_mandir}/man5/centos_report_event.conf.5
+        count: 1
+      - target: "spec"
+        find: |
+              %files centos
+              %{_datadir}/%{name}/workflows/workflow_CentOSCCpp.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSKerneloops.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSPython.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSPython3.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSVmcore.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSXorg.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSLibreport.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSJava.xml
+              %{_datadir}/%{name}/workflows/workflow_CentOSJavaScript.xml
+              %config(noreplace) %{_sysconfdir}/libreport/workflows.d/report_centos.conf
+              %{_mandir}/man5/report_centos.conf.5.*
+              %{_datadir}/%{name}/events/report_CentOSBugTracker.xml
+              %config(noreplace) %{_sysconfdir}/libreport/events/report_CentOSBugTracker.conf
+              %{_mandir}/man5/report_CentOSBugTracker.conf.5.*
+              # report_CentOSBugTracker events are shipped by libreport package
+              %config(noreplace) %{_sysconfdir}/libreport/events.d/centos_report_event.conf
+              %{_mandir}/man5/centos_report_event.conf.5.gz
+              
+              %files plugin-rhtsupport
+              %config(noreplace) %{_sysconfdir}/libreport/plugins/rhtsupport.conf
+              %{_datadir}/%{name}/conf.d/plugins/rhtsupport.conf
+              %{_datadir}/%{name}/events/report_RHTSupport.xml
+              %{_datadir}/%{name}/events/report_RHTSupport_AddData.xml
+              %{_datadir}/dbus-1/interfaces/com.redhat.problems.configuration.rhtsupport.xml
+              %config(noreplace) %{_sysconfdir}/libreport/events.d/rhtsupport_event.conf
+              %{_mandir}/man1/reporter-rhtsupport.1.gz
+              %{_mandir}/man5/rhtsupport.conf.5.*
+              %{_mandir}/man5/rhtsupport_event.conf.5.*
+              %{_bindir}/reporter-rhtsupport
+        replace: |
+              %files almalinux
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxCCpp.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxKerneloops.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxPython.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxPython3.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxVmcore.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxXorg.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxLibreport.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxJava.xml
+              %{_datadir}/%{name}/workflows/workflow_AlmaLinuxJavaScript.xml
+              %config(noreplace) %{_sysconfdir}/libreport/workflows.d/report_almalinux.conf
+              %{_mandir}/man5/report_almalinux.conf.5.*
+              %{_datadir}/%{name}/events/report_AlmaLinuxBugTracker.xml
+              %config(noreplace) %{_sysconfdir}/libreport/events/report_AlmaLinuxBugTracker.conf
+              %{_mandir}/man5/report_AlmaLinuxBugTracker.conf.5.*
+              # report_AlmaLinuxBugTracker events are shipped by libreport package
+              %config(noreplace) %{_sysconfdir}/libreport/events.d/almalinux_report_event.conf
+              %{_mandir}/man5/almalinux_report_event.conf.5.gz
+        count: 1
+
+  - delete_line:
+      - target: "spec"
+        lines:
+          - |
+            %package plugin-rhtsupport
+            Summary: %{name}'s RHTSupport plugin
+            Requires: %{name} = %{version}-%{release}
+            Requires: libreport-web = %{version}-%{release}
+            
+            %description plugin-rhtsupport
+            Plugin to report bugs into RH support system.
+          - "Requires: %{name}-plugin-rhtsupport = %{version}-%{release}"
+          - |
+            %if 0%{?rhel}
+            %files rhel
+            %{_datadir}/%{name}/workflows/workflow_RHELCCpp.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELKerneloops.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELPython.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELvmcore.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELxorg.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELLibreport.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELJava.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELJavaScript.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataCCpp.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataJava.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataKerneloops.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataLibreport.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataPython.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDatavmcore.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataxorg.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELAddDataJavaScript.xml
+            %{_datadir}/%{name}/workflows/workflow_uReport.xml
+            %config(noreplace) %{_sysconfdir}/libreport/workflows.d/report_rhel.conf
+            %config(noreplace) %{_sysconfdir}/libreport/workflows.d/report_rhel_add_data.conf
+            %config(noreplace) %{_sysconfdir}/libreport/workflows.d/report_uReport.conf
+            %{_mandir}/man5/report_rhel.conf.5.*
+            %{_mandir}/man5/report_uReport.conf.5.*
+            
+            %files rhel-bugzilla
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaCCpp.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaKerneloops.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaPython.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaVmcore.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaXorg.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaLibreport.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaJava.xml
+            %{_datadir}/%{name}/workflows/workflow_RHELBugzillaJavaScript.xml
+            %config(noreplace) %{_sysconfdir}/libreport/workflows.d/report_rhel_bugzilla.conf
+            %{_mandir}/man5/report_rhel_bugzilla.conf.5.*
+            
+            %files rhel-anaconda-bugzilla
+            %{_datadir}/%{name}/workflows/workflow_AnacondaRHELBugzilla.xml
+            %endif
+          - |
+            %if 0%{?rhel}
+            %{_datadir}/%{name}/workflows/workflow_AnacondaRHEL.xml
+            %endif
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Add support for AlmaLinux Bug Tracker"
+          - "Remove libreport-plugin-rhtsupport and libreport-rhel"
+          - "Remove libreport-rhel-bugzilla and libreport-rhel-anaconda-bugzilla"
+
+  - add_files:
+      - type: "patch"
+        name: "9100-Add-almalinux-plugin.patch"
+        number: 9100
+      - type: "patch"
+        name: "9101-Remove-rhtsupport.patch"
+        number: 9101

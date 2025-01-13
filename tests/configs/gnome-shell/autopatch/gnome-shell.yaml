@@ -1,0 +1,41 @@
+actions:
+  - replace:
+      - target: "0001-panel-Use-branding-in-activities-button.patch"
+        find: "if (GLib.get_os_info('ID') === 'rhel') {"
+        replace: "if (GLib.get_os_info('ID') === 'almalinux') {"
+        count: 1
+      - target: "gnome-shell-favourite-apps-firefox.patch"
+        find: "<default>[ 'org.mozilla.firefox.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Music.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'org.gnome.TextEditor.desktop']</default>"
+        replace: "<default>[ 'firefox.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Music.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'org.gnome.TextEditor.desktop']</default>"
+        count: 1
+      - target: "gnome-shell-favourite-apps-firefox.patch"
+        find: "'firefox.desktop': 'org.mozilla.firefox.desktop',"
+        replace: "'firefox.desktop': 'firefox.desktop',"
+        count: 1
+      - target: "gnome-shell-favourite-apps-terminal.patch"
+        find: |
+              -      <default>[ 'org.mozilla.firefox.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Music.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'org.gnome.TextEditor.desktop']</default>
+              +      <default>[ 'org.mozilla.firefox.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Music.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.TextEditor.desktop']</default>
+        replace: |
+              -      <default>[ 'firefox.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Music.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'org.gnome.TextEditor.desktop']</default>
+              +      <default>[ 'firefox.desktop', 'org.gnome.Calendar.desktop', 'org.gnome.Music.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.TextEditor.desktop']</default>
+        count: 1
+      - target: "spec"
+        find: "Patch: 0001-theme-Welcome-Illustration.patch"
+        replace: |
+              %if 0%{!?almalinux}
+              Patch: 0001-theme-Welcome-Illustration.patch
+              %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "AlmaLinux changes: Use AlmaLinux icon as activities button"
+          - "Use unbranded illustrations"
+          - "Fix Firefox desktop filename in favorites"

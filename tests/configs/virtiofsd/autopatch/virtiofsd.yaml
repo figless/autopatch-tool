@@ -1,0 +1,18 @@
+actions:
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Enable build on ppc64le"
+  - replace:
+      - target: "spec"
+        find: |
+              %if 0%{?rhel}
+              ExcludeArch:    i686 %{power64}
+              %else
+              ExcludeArch:    i686
+              %endif
+        replace: "ExcludeArch:    i686"

@@ -1,0 +1,43 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%autosetup -p 1"
+        replace: |
+          %autosetup -p 1
+
+          # AlmaLinux install class
+          cp %{SOURCE1} data/product.d/
+
+          # Debrand
+          sed -e 's/RHEL/AlmaLinux/g' -i po/*.po
+          sed -e 's/Red Hat Enterprise Linux/AlmaLinux/g' -i po/*.po
+        count: 1
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "AlmaLinux changes"
+
+  - add_files:
+      - type: "source"
+        name: "almalinux.conf"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-installer-colors.patch"
+        number: 1000
+      - type: "patch"
+        name: "anaconda-almalinux-disable-subscription.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-disable-cdn-radiobutton.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-remove-visible-rh-references.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-add-minimal-repo.patch"
+        number: 1006

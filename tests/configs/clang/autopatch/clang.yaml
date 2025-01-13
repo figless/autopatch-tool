@@ -1,0 +1,26 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              mkdir -p %{buildroot}%{_sysconfdir}/%{name}/
+              echo "--gcc-triple=%{_target_cpu}-redhat-linux" >> %{buildroot}%{_sysconfdir}/%{name}/clang.cfg
+              %endif
+        replace: |
+              mkdir -p %{buildroot}%{_sysconfdir}/%{name}/
+              %ifarch x86_64_v2
+              echo "--gcc-triple=x86_64-redhat-linux" >> %{buildroot}%{_sysconfdir}/%{name}/clang.cfg
+              %else
+              echo "--gcc-triple=%{_target_cpu}-redhat-linux" >> %{buildroot}%{_sysconfdir}/%{name}/clang.cfg
+              %endif
+              %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use x86_64-redhat-linux as default gcc triple for x86_64_v2"

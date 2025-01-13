@@ -1,0 +1,22 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%autosetup -n background-logo-extension-%{tarball_version} -S git"
+        replace: "%autosetup -n background-logo-extension-%{tarball_version} -S git -p1"
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Debrand for AlmaLinux OS - apply AlmaLinux patch"
+          - "Adjust logo size and default values for AlmaLinux OS"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Adjust-default-values-for-AlmaLinux.patch"
+        number: "Latest"

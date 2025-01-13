@@ -1,0 +1,16 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "netdump, diskdump and kdump packages from Red Hat Linux, the mcore kernel patch"
+        replace: netdump, diskdump and kdump packages from AlmaLinux, the mcore kernel patch
+        count: 2
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Debrand for AlmaLinux"

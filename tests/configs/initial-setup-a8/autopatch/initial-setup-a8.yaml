@@ -1,0 +1,15 @@
+actions:
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "AlmaLinux OS debrand patch"
+
+  - add_files:
+      - type: "patch"
+        name: "initial-setup-almalinux.patch"
+        number: 100

@@ -1,0 +1,66 @@
+actions:
+
+  - delete_line:
+      - target: "spec"
+        lines:
+          - |
+            %ifarch x86_64 aarch64 ppc64le
+            %define sb_key		centossecureboot202
+            %endif
+            %else
+            %ifarch x86_64 aarch64
+            %define sb_key		redhatsecureboot502
+            %endif
+            %ifarch ppc64le
+            %define sb_key		redhatsecureboot702
+            %endif
+            
+            %endif
+
+  - replace:
+      - target: "grub.macros"
+        find: "x86_64"
+        replace: "%{x86_64}"
+        count: 5
+      - target: "sbat.csv.in"
+        find: "grub.rh,2,Red Hat,grub2,@@VERSION_RELEASE@@,mailto:secalert@redhat.com"
+        replace: |
+            grub.rh,2,Red Hat,grub2,@@RHEL_VERSION_RELEASE@@,mailto:secalert@redhat.com
+            grub.almalinux,2,AlmaLinux,grub2,@@VERSION_RELEASE@@,mailto:security@almalinux.org
+      - target: "spec"
+        find: "x86_64"
+        replace: "%{x86_64}"
+        count: 5
+      - target: "spec"
+        find: "%if 0%{?centos}"
+        replace: "%define sb_key         almalinuxsecurebootca0"
+        count: 1
+      - target: "spec"
+        find: |
+            # generate with do-rebase
+            %include %{SOURCE11}
+        replace: |
+            # AlmaLinux: keep upstream EVR for RHEL SBAT entry
+            %define rhel_version_release $(echo %{version}-%{release} | sed 's/\.alma.*//')
+            
+            # generate with do-rebase
+            %include %{SOURCE11}
+        count: 1
+      - target: "spec"
+        find: "sed -e \"s,@@VERSION@@,%{version},g\" -e \"s,@@VERSION_RELEASE@@,%{version}-%{release},g\" \\"
+        replace: "sed -e \"s,@@VERSION@@,%{version},g\" -e \"s,@@VERSION_RELEASE@@,%{version}-%{release},g\" -e \"s,@@RHEL_VERSION_RELEASE@@,%{rhel_version_release},g\" \\"
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Debrand for AlmaLinux"
+
+  - add_files:
+    - type: "patch"
+      name: "test.patch"
+      number: 1000

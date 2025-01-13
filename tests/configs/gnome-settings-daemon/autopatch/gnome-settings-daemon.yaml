@@ -1,0 +1,63 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%autosetup -S git"
+        replace: |
+              %setup -q
+              
+              %patch00001 -p 1
+              %patch00002 -p 1
+              %patch00003 -p 1
+              %patch00004 -p 1
+              %patch10001 -p 1
+              %patch20001 -p 1
+              %patch30001 -p 1
+              %patch40001 -p 1
+              %patch50017 -p 1
+              %patch60001 -p 1
+              
+              %if %{with subman}
+              %patch50001 -p 1
+              %patch50002 -p 1
+              %patch50003 -p 1
+              %patch50004 -p 1
+              %patch50005 -p 1
+              %patch50006 -p 1
+              %patch50007 -p 1
+              %patch50008 -p 1
+              %patch50009 -p 1
+              %patch50010 -p 1
+              %patch50011 -p 1
+              %patch50012 -p 1
+              %patch50013 -p 1
+              %patch50014 -p 1
+              %patch50015 -p 1
+              %patch50016 -p 1
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+          %{_sysconfdir}/xdg/autostart/org.gnome.SettingsDaemon.Subscription.desktop
+          %{_libexecdir}/gsd-subman
+          %{_libexecdir}/gsd-subman-helper
+          %{_datadir}/polkit-1/actions/org.gnome.settings-daemon.plugins.subman.policy
+          %{_datadir}/polkit-1/rules.d/org.gnome.settings-daemon.plugins.subman.rules
+        replace: |
+          %if %{with subman}
+          %{_sysconfdir}/xdg/autostart/org.gnome.SettingsDaemon.Subscription.desktop
+          %{_libexecdir}/gsd-subman
+          %{_libexecdir}/gsd-subman-helper
+          %{_datadir}/polkit-1/actions/org.gnome.settings-daemon.plugins.subman.policy
+          %{_datadir}/polkit-1/rules.d/org.gnome.settings-daemon.plugins.subman.rules
+          %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Disable subman plugin"

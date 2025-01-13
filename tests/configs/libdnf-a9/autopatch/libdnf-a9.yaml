@@ -1,0 +1,15 @@
+actions:
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Added patch for almalinux bugtracker"
+
+  - add_files:
+      - type: "patch"
+        name: "almalinux_bugtracker.patch"
+        number: 10001

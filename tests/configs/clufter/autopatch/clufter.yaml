@@ -1,0 +1,16 @@
+actions:
+  - replace:
+      - target: "pacemaker-borrow-schemas"
+        find: ": \"${INPUTDIR=$(pkg-config --variable schemadir pacemaker)}\""
+        replace: ": \"${INPUTDIR=$(pkg-config --variable schemadir pacemaker-schemas)}\""
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use a new version of pacemaker to build clufter"

@@ -1,0 +1,38 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%autosetup -p 1"
+        replace: |
+              %autosetup -p 1
+              
+              # Debrand
+              sed -e 's/RHEL/AlmaLinux/g' -i po/*.po
+              sed -e 's/Red Hat Enterprise Linux/AlmaLinux/g' -i po/*.po
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrew Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "AlmaLinux changes"
+
+  - add_files:
+      - type: "patch"
+        name: "anaconda-almalinux-installer-colors.patch"
+        number: 1000
+      - type: "patch"
+        name: "anaconda-almalinux-disable-subscription.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-disable-cdn-radiobutton.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-remove-visible-fedora-references.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "anaconda-almalinux-add-minimal-repo.patch"
+        number: "Latest"

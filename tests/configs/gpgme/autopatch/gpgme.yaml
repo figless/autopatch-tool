@@ -1,0 +1,36 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              %ifarch %{multilib_arches}
+              mv %{buildroot}%{_bindir}/gpgme-config{,.%{_target_cpu}}
+        replace: |
+              %ifarch %{multilib_arches}
+              %ifarch x86_64_v2
+              mv %{buildroot}%{_bindir}/gpgme-config{,.x86_64}
+              %else
+              mv %{buildroot}%{_bindir}/gpgme-config{,.%{_target_cpu}}
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              %ifarch %{multilib_arches}
+              %{_bindir}/%{name}-config.%{_target_cpu}
+        replace: |
+              %ifarch %{multilib_arches}
+              %ifarch x86_64_v2
+              %{_bindir}/%{name}-config.x86_64
+              %else
+              %{_bindir}/%{name}-config.%{_target_cpu}
+              %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Add x86_64_v2 support"

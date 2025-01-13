@@ -1,0 +1,69 @@
+actions:
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - add_files:
+      - type: "source"
+        name: "almalinuxsecurebootca0.cer"
+        number: 300
+
+  - delete_files:
+      - file_name: "redhatsecurebootca3.cer"
+      - file_name: "redhatsecureboot301.cer"
+      - file_name: "redhatsecurebootca5.cer"
+      - file_name: "redhatsecureboot503.cer"
+  
+  - delete_line:
+    - target: "spec"
+      lines: 
+      - |
+            Source300:   redhatsecurebootca3.cer
+            Source301:   redhatsecureboot301.cer
+            Source500:   redhatsecurebootca5.cer
+            Source503:   redhatsecureboot503.cer
+
+  - replace:
+      - target: "spec"
+        find: "%global debug_package %{nil}"
+        replace: |
+              %global efi_vendor almalinux
+              %global efidir almalinux
+              %global efi_esp_dir /boot/efi/EFI/%{efidir}
+              
+              %global debug_package %{nil}
+        count: 1
+      - target: "spec"
+        find: |
+          -Defi_sbat_distro_id="fedora" \
+          -Defi_sbat_distro_summary="The Fedora Project" \
+        replace: |
+          -Defi_sbat_distro_id="almalinux" \
+          -Defi_sbat_distro_summary="AlmaLinux" \
+        count: 1
+      - target: "spec"
+        find: "-Defi_sbat_distro_url=\"https://src.fedoraproject.org/rpms/%{name}\""
+        replace: "-Defi_sbat_distro_url=\"https://git.almalinux.org/rpms/%{name}\""
+        count: 1
+      - target: "spec"
+        find: "%pesign -s -i %{fwup_efi_fn} -o %{fwup_efi_fn}.tmp -a %{SOURCE300} -c %{SOURCE301} -n redhatsecureboot301"
+        replace: "%pesign -s -i %{fwup_efi_fn} -o %{fwup_efi_fn}.tmp -a %{SOURCE300} -c %{SOURCE301} -n almalinuxsecurebootca0"
+        count: 1
+      - target: "spec"
+        find: "%pesign -s -i %{fwup_efi_fn}.tmp -o %{fwup_efi_fn}.signed -a %{SOURCE500} -c %{SOURCE503} -n redhatsecureboot503"
+        replace: "%pesign -s -i %{fwup_efi_fn}.tmp -o %{fwup_efi_fn}.signed -a %{SOURCE500} -c %{SOURCE503} -n almalinuxsecurebootca0"
+        count: 1
+      - target: "spec"
+        find: "Source300: almalinuxsecurebootca0.cer"
+        replace: |
+              Source300: almalinuxsecurebootca0.cer
+              Source301: almalinuxsecurebootca0.cer
+              Source500: almalinuxsecurebootca0.cer
+              Source503: almalinuxsecurebootca0.cer
+        count: 1
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use AlmaLinux cert"

@@ -1,0 +1,28 @@
+actions:
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Enable SPICE on AlmaLinux"
+  - replace:
+      - target: "spec"
+        find: |
+              %if 0%{?rhel}
+              # No qemu-kvm on POWER (RHBZ#1946532).
+              ExcludeArch:    %{power64}
+              %endif
+        replace: |
+              %if 0%{?rhel}
+              %if 0%{?almalinux} < 10
+              # No qemu-kvm on POWER (RHBZ#1946532).
+              ExcludeArch:    %{power64}
+              %endif
+              %endif
+        count: 1
+  - add_files:
+      - type: "patch"
+        name: "my_patch.patch"
+        number: "Latest"

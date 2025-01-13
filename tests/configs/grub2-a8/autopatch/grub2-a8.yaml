@@ -1,0 +1,114 @@
+actions:
+  - replace:
+      - target: "grub.macros"
+        find: "Provides:	%{name}-efi = %{evr}					\\"
+        replace: |
+              Requires:	%{efi_esp_dir}/shim%%(echo %{1} | cut -d- -f2).efi	\
+              Provides:	%{name}-efi = %{evr}					\
+              Provides:	almalinux(grub2-sig-key) = 202303				\
+              %{expand:%%ifarch x86_64						\
+              Conflicts:	shim-x64 <= 15.6-1.el8.alma					\
+              Conflicts:	shim-ia32 <= 15.6-1.el8.alma				\
+              %%endif}										\
+        count: 1
+      - target: "grub.macros"
+        find: "ln -sf ../efi/EFI/%{efi_vendor}/grubenv				\\\\\\"
+        replace: "ln -sf ../efi/EFI/%{efidir}/grubenv				\\\\\\"
+        count: 1
+      - target: "sbat.csv.in"
+        find: "grub.rh,2,Red Hat,grub2,@@VERSION_RELEASE@@,mailto:secalert@redhat.com"
+        replace: |
+              grub.rh,2,Red Hat,grub2,@@RHEL_VERSION_RELEASE@@,mailto:secalert@redhat.com
+              grub.almalinux,2,AlmaLinux,grub2,@@VERSION_RELEASE@@,mailto:security@almalinux.org
+        count: 1
+      - target: "spec"
+        find: "%undefine _hardened_build"
+        replace: |
+              %global efi_vendor almalinux
+              %global efidir almalinux
+              %global efi_esp_dir /boot/efi/EFI/%{efidir}
+              
+              %undefine _hardened_build
+      - target: "spec"
+        find: |
+              %define old_sb_cer	%{SOURCE14}
+              %define old_sb_key	redhatsecureboot301
+              %define sb_ca		%{SOURCE15}
+              %define sb_cer		%{SOURCE16}
+              %define sb_key		redhatsecureboot502
+        replace: |
+              %define old_sb_cer	%{SOURCE13}
+              %define old_sb_key	almalinuxsecurebootca0
+              %define sb_ca		%{SOURCE13}
+              %define sb_cer		%{SOURCE13}
+              %define sb_key		almalinuxsecurebootca0
+        count: 1
+      - target: "spec"
+        find: | 
+              %define old_sb_cer	%{SOURCE17}
+              %define sb_cer		%{SOURCE18}
+              %define sb_key		redhatsecureboot702
+        replace: |
+              %define old_sb_cer	%{SOURCE13}
+              %define sb_cer		%{SOURCE13}
+              %define sb_key		almalinuxsecurebootca0
+        count: 1
+      - target: "spec"
+        find: |
+              # generate with do-rebase
+              %include %{SOURCE2}
+        replace: |
+              # AlmaLinux: keep upstream EVR for RHEL SBAT entry
+              %define rhel_version_release $(echo %{version}-%{release} | sed 's/\.alma.*//')
+              
+              # generate with do-rebase
+              %include %{SOURCE2}
+        count: 1
+      - target: "spec"
+        find: "sed -e \"s,@@VERSION@@,%{version},g\" -e \"s,@@VERSION_RELEASE@@,%{version}-%{release},g\" \\"
+        replace: "sed -e \"s,@@VERSION@@,%{version},g\" -e \"s,@@VERSION_RELEASE@@,%{version}-%{release},g\" -e \"s,@@RHEL_VERSION_RELEASE@@,%{rhel_version_release},g\" \\"
+        count: 1
+      - target: "spec"
+        find: "%files common -f grub.lang"
+        replace: |
+              %if 0%{with_efi_arch}
+              %posttrans %{package_arch}
+              if [ -d /sys/firmware/efi ] && [ ! -f %{efi_esp_dir}/grub.cfg ]; then
+                  grub2-mkconfig -o %{efi_esp_dir}/grub.cfg || :
+              fi
+              %endif
+              
+              %if 0%{with_alt_efi_arch}
+              %posttrans %{alt_package_arch}
+              if [ -d /sys/firmware/efi ] && [ ! -f %{efi_esp_dir}/grub.cfg ]; then
+                  grub2-mkconfig -o %{efi_esp_dir}/grub.cfg || :
+              fi
+              %endif
+              
+              %files common -f grub.lang
+        
+  - delete_line:
+      - target: "spec"
+        lines:
+          - |
+            Source13:	redhatsecurebootca3.cer
+            Source14:	redhatsecureboot301.cer
+            Source15:	redhatsecurebootca5.cer
+            Source16:	redhatsecureboot502.cer
+            Source17:	redhatsecureboot601.cer
+            Source18:	redhatsecureboot701.cer
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Debrand for AlmaLinux"
+
+  - add_files:
+      - type: "source"
+        name: "almalinuxsecurebootca0.cer"
+        number: 13

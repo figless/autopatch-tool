@@ -1,0 +1,83 @@
+# actions - объединённая секция для всех действий, связанных с файлами, включая spec-файл
+actions:
+  # replace - действия по замене строк. Указываем target (путь к файлу или "spec" для spec-файла).
+  - replace:
+      - target: "spec"  # таргетом может быть "spec" либо файл, к которому применяются изменения (в таком случае файл будет искаться).
+      # в качестве таргета может быть spec или файл в репозитории
+        find: "RHEL" # строка, которую нужно заменить
+        replace: "MyCustomLinux" # строка, на которую нужно заменить
+        count: 1  # количество замен, по умолчанию -1 (все вхождения)
+      - target: "README.md"
+        find: "RHEL"
+        replace: "MyCustomLinux"
+        
+  # delete_line - список строк для удаления. 
+  - delete_line:
+      - target: "spec" # таргетом может быть "spec" либо файл, к которому применяются изменения (в таком случае файл будет искаться).
+        lines:
+          - "line1"
+          - "line2"
+          - |
+             hello world
+             asdfas
+      - target: "README.md"
+        lines:
+          - "line1"
+
+  # modify_release - изменение релиза с добавлением суффикса, включен по умолчанию.
+  - modify_release:
+    - suffix: ".mycustom.1" # можно не указывать если enabled: false
+      enabled: true # если не указано, то по умолчанию enabled: true
+
+  # changelog_entry - добавление записей в чейнджлог для spec-файла.
+  - changelog_entry:
+      # Может быть несколько записей. В случае если есть autochangelog не должно добавляться, так же "line" используется в качестве коммит месседжа.
+      - name: "eabdullin" # имя автора
+        email: "eabdullin@almalinux.org" # email автора
+        line: # строки для добавления в changelog
+          - "Updated branding to MyCustomLinux"
+          - "Additional update for branding"
+
+  # add_files - добавление файлов (исходные файлы и патчи).
+  - add_files:
+      - type: "patch" # тип файла (patch или source, возможно в будущем добавление других типов)
+        name: "my_patch.patch" # имя патча
+        number: "Latest" # number - либо номер патча, либо "Latest" для вычисления патча автоматически. (по дефолту "Latest")
+      - type: "source"
+        name: "my_new_source.tar.gz" # имя исходного файла
+        number: "Latest" # number - либо номер сорса, либо "Latest" для вычисления сорса автоматически. (по дефолту "Latest")
+
+  # delete_files - список файлов, которые нужно удалить.
+  - delete_files:
+      - file_name: "file1.txt" # имя файла для удаления, будет искаться в репозитории пакета 
+      - file_name: "file2.txt"
+
+
+# не нужно в первой версии тулзы
+  # dependencies - список зависимостей, которые необходимо добавить (можно добавить в сабпакеты, указав subpackage).
+  - dependencies:
+      main:
+        - name: "new-dependency1" # имя зависимости
+          buildrequires: true # true - зависимость добавляется в BuildRequires, false - Requires
+        - name: "new-dependency2"
+          buildrequires: false
+      subpackage1: # добавление зависимостей в сабпакеты(имя сабпакета должно совпадать с именем сабпакета в spec-файле)
+        - name: "subpackage-dependency1"
+          buildrequires: true
+        - name: "subpackage-dependency2"
+          buildrequires: false
+      subpackage2: # добавление зависимостей в сабпакеты
+        - name: "subpackage-dependency3"
+          buildrequires: true
+        - name: "subpackage-dependency4"
+          buildrequires: false
+  
+  # apply_patch - список патчей для применения в репозитории rpm пакета.
+  # Патч будет выполняться в директории с пакетом. Скрипт выполняется вторым в списке действий.
+  - apply_patch:
+      - "my_patch.diff" # имя патча
+
+  # run_custom_scripts - список скриптов для выполнения в репозитории rpm пакета.
+  # скрипт будет выполняться в директории с пакетом. Скрипт выполняется самым первым в списке действий.
+  - run_custom_scripts:
+      - "custom_script.sh" # имя скрипта

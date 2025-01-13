@@ -1,0 +1,20 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Added patch for almalinux bugtracker"
+          - "Added patch to support multiple keys"
+
+  - add_files:
+      - type: "patch"
+        name: "almalinux_bugtracker.patch"
+        number: 10001
+      - type: "patch"
+        name: "dnf-keyring-support-multiple-keys.patch"
+        number: 10002

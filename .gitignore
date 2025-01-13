@@ -1,0 +1,9 @@
+test.run
+.DS_Store
+__pycache__
+garbage
+.pytest_cache
+test_config.yaml
+test_spec.spec*
+main.py
+tests/results/

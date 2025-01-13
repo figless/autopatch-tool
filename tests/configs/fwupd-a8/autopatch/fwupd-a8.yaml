@@ -1,0 +1,71 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%global glib2_version"
+        replace: |
+                  %global efi_vendor almalinux
+                  %global efidir almalinux
+                  %global efi_esp_dir /boot/efi/EFI/%{efidir}
+
+                  %global glib2_version
+        count: 1
+      - target: "spec"
+        find: |
+          -Dfwupd-efi:efi_sbat_distro_id="rhel" \
+          -Dfwupd-efi:efi_sbat_distro_summary="Red Hat Enterprise Linux" \
+        replace: |
+          -Dfwupd-efi:efi_sbat_distro_id="almalinux" \
+          -Dfwupd-efi:efi_sbat_distro_summary="AlmaLinux" \
+        count: 1
+      - target: "spec"
+        find: "-Dfwupd-efi:efi_sbat_distro_url=\"mail:secalert@redhat.com\" \\"
+        replace: "-Dfwupd-efi:efi_sbat_distro_url=\"mail:security@almalinux.org\" \\"
+        count: 1
+      - target: "spec"
+        find: |
+          %pesign -s -i %{fwup_efi_fn} -o %{fwup_efi_fn}.tmp -a %{SOURCE300} -c %{SOURCE301} -n redhatsecureboot301
+          %pesign -s -i %{fwup_efi_fn}.tmp -o %{fwup_efi_fn}.signed -a %{SOURCE500} -c %{SOURCE503} -n redhatsecureboot503
+          rm -fv %{fwup_efi_fn}.tmp
+        replace: "%pesign -s -i %{fwup_efi_fn} -o %{fwup_efi_fn}.signed -a %{SOURCE300} -c %{SOURCE301} -n clsecureboot001"
+        count: 1
+      - target: "spec"
+        find: |
+          %{_datadir}/fwupd/uefi-capsule-ux.tar.xz
+          %endif
+        replace: |
+          %{_datadir}/fwupd/uefi-capsule-ux.tar.xz
+          %endif
+          %if 0%{?have_modem_manager}
+          %{_libdir}/fwupd-plugins-3/libfu_plugin_modem_manager.so
+          %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - delete_line:
+    - target: "spec"
+      lines: 
+      - |
+            Source300:   redhatsecurebootca3.cer
+            Source301:   redhatsecureboot301.cer
+            Source500:   redhatsecurebootca5.cer
+            Source503:   redhatsecureboot503.cer
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "AlmaLinux changes"
+
+  - add_files:
+      - type: "source"
+        name: "almalinuxsecurebootca0.cer"
+        number: 300
+
+  - delete_files:
+      - file_name: "redhatsecureboot301.cer"
+      - file_name: "redhatsecureboot503.cer"
+      - file_name: "redhatsecurebootca3.cer"
+      - file_name: "redhatsecurebootca5.cer"

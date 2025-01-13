@@ -1,0 +1,21 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "git config --local --add efi.arches \"x86_64 aarch64 %{arm} %{ix86}\""
+        replace: "git config --local --add efi.arches \"%{x86_64} aarch64 %{arm} %{ix86}\""
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Add support for versioned x86_64 arches"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Add-support-for-versioned-x86_64-arches.patch"
+        number: 0001

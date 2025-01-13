@@ -1,0 +1,18 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Sergey Fokin"
+        email: "sfokin@cloudlinux.com"
+        line:
+          - "Аdd AlmaLinux support"
+          - "Fix permission for custom created gpg dir"
+          - "Change gpg server to pgp.mit.edu"
+
+  - add_files:
+      - type: "patch"
+        name: "hplip-3.18.4-gpgdir-rules-gpg-server.patch"
+        number: 100

@@ -1,0 +1,48 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              %else
+              %bcond_with glade
+              %bcond_with live
+              %endif
+        replace: |
+              %else
+              %if 0%{?almalinux}
+              %bcond_without live
+              %else
+              %bcond_with glade
+              %bcond_with live
+              %endif
+              %endif
+        count: 1
+      - target: "spec"
+        find: "%autosetup -p 1"
+        replace: |
+                 %autosetup -p 1
+                 
+                 sed -e 's/RHEL/AlmaLinux/g' -i po/*.po
+                 sed -e 's/Red Hat Enterprise Linux/AlmaLinux/g' -i po/*.po
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Apply AlmaLinux patches"
+          - "Enable live subpackage by defaul on AlmaLinux"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Add-Minimal-repo-support.patch"
+        number: 1001
+      - type: "patch"
+        name: "0002-Change-anaconda-background-color.patch"
+        number: "Latest"
+      - type: "patch"
+        name: "0003-Remove-visible-Fedora-references.patch"
+        number: "Latest"

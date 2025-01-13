@@ -1,0 +1,53 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              Patch0026: 0026-cli-list-show-a-hint-about-creating-a-case-in-RHTS.patch
+              Patch0027: 0027-cli-mark-the-suggestion-text-for-translation.patch
+              Patch0028: 0028-cli-get-list-of-possible-workflows-for-problem_data_.patch
+        replace: |
+              #Patch0026: 0026-cli-list-show-a-hint-about-creating-a-case-in-RHTS.patch
+              #Patch0027: 0027-cli-mark-the-suggestion-text-for-translation.patch
+              #Patch0028: 0028-cli-get-list-of-possible-workflows-for-problem_data_.patch
+        count: 1
+      - target: "spec"
+        find: |
+          %if 0%{?rhel}
+          Requires: libreport-rhel >= %{libreport_ver}
+          Requires: libreport-plugin-rhtsupport >= %{libreport_ver}
+          %else
+        replace: "%if 0%{!?rhel}"
+        count: 2
+        
+  - delete_line:
+      - target: "spec"
+        lines:
+          - "--enable-authenticated-autoreporting \\"
+          - |
+             %if 0%{?rhel}
+             Requires: libreport-plugin-rhtsupport
+             %endif
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org" 
+        line: 
+          - "Add support for GPG subkeys"
+      - name: "Sergey Fokin"
+        email: "sfokin@cloudlinux.com" 
+        line: 
+          - "apply debranding"
+
+  - add_files:
+      - type: "patch" 
+        name: "9100-add_gpg_subkeys_support.patch" 
+        number: 9100
+
+  - delete_files:
+      - file_name: "0026-cli-list-show-a-hint-about-creating-a-case-in-RHTS.patch" 
+      - file_name: "0027-cli-mark-the-suggestion-text-for-translation.patch"
+      - file_name: "0028-cli-get-list-of-possible-workflows-for-problem_data_.patch"

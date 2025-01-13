@@ -1,0 +1,29 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%define target %{_target_cpu}-redhat-linux"
+        replace: |
+              %define target %{_target_cpu}-redhat-linux
+              %ifarch x86_64_v2
+              %define target x86_64-redhat-linux
+              %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Overwrite target for x86_64_v2"
+      - name: "Koichiro Iwao"
+        email: "meta@almalinux.org"
+        line:
+          - "Apply patch from upstream BZ #32470"
+  
+  - add_files:
+      - type: "patch"
+        name: "glibc-upstream-2.39-bz-32470.patch"
+        number: 1000

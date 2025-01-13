@@ -1,0 +1,16 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Elkhan Mammadli"
+        email: "elkhan@almalinux.org"
+        line:
+          - "0031-Improvements-for-AlmaLinux-OS-and-CloudLinux-OS.patch"
+
+  - add_files:
+      - type: "patch"
+        name: "0031-Improvements-for-AlmaLinux-OS-and-CloudLinux-OS.patch"
+        number: 3100

@@ -1,0 +1,16 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "0001-Improvements-for-AlmaLinux-OS-and-CloudLinux-OS.patch"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Improvements-for-AlmaLinux-OS-and-CloudLinux-OS.patch"
+        number: 100

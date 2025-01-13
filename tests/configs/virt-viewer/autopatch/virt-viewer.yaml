@@ -1,0 +1,14 @@
+actions:
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Enable SPICE on AlmaLinux"
+  - replace:
+      - target: "spec"
+        find: "%if 0%{?rhel} >= 9"
+        replace: "%if 0%{?rhel} >= 9 && !0%{?almalinux}"
+        count: 1

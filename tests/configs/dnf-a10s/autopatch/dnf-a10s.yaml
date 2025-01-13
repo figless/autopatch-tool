@@ -1,0 +1,20 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Add x86_64_v2 to _BASEARCH_MAP"
+          - "Add link to AlmaLinux bugtracker"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Add-link-to-AlmaLinux-bugtracker.patch"
+        number: 1001
+      - type: "patch"
+        name: "0001-Add-x86_64_v2-to-_BASEARCH_MAP.patch"
+        number: "Latest"
