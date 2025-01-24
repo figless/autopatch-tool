@@ -232,6 +232,8 @@ def get_patch_directive_type(line: str) -> PatchDirectiveType:
         return PatchDirectiveType.UPPER_P_W_SPACE
     if re.match(r"^%patch\s+-P[0-9]{1,5}", line):
         return PatchDirectiveType.UPPER_P_N_SPACE
+    if re.match(r"^(ApplyOptionalPatch|ApplyPatch)", line):
+        return PatchDirectiveType.KERNEL
     return None
 
 def generate_patch_apply_line(patch_number: str, patch_stem: str, patch_directive_type: PatchDirectiveType) -> str:
@@ -241,6 +243,8 @@ def generate_patch_apply_line(patch_number: str, patch_stem: str, patch_directiv
         return f"""%patch -P {patch_number} -p1 -b .{patch_stem}"""
     elif patch_directive_type == PatchDirectiveType.UPPER_P_N_SPACE:
         return f"""%patch -P{patch_number} -p1 -b .{patch_stem}"""
+    elif patch_directive_type == PatchDirectiveType.KERNEL:
+        return f"""ApplyPatch {patch_stem}.patch"""
     else:
         raise RPMSpecFileParsingError("Unknown patch directive type")
 

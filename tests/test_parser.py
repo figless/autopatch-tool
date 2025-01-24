@@ -592,6 +592,47 @@ def test_delete_files_action():
             ValueError,
             "Unexpected keys: extra_key"
         ),
+        ("""
+            actions:
+              - add_files:
+                  - type: "source"
+                    name: "file.tar.gz"
+                    number: 1
+                    extra_key: "unexpected"
+            """,
+            ValueError,
+            "Unexpected keys: extra_key"
+        ),
+        ("""
+            actions:
+              - run_script:
+                  - script: "source"
+            """,
+            {"run_script": [{"target": "", "script": "source"}]},
+            None
+        ),
+        ("""
+            actions:
+              - run_script:
+                  - script: ""
+            """,
+            ValueError,
+            "Value for 'script' cannot be empty."
+        ),
+        ("""
+            actions:
+              - run_script:
+            """,
+            TypeError,
+            "Action entries for 'run_script' must be a list."
+        ),
+        ("""
+            actions:
+              - run_scri:
+            """,
+            ValueError,
+            "Unknown action type: run_scri"
+        ),
     ]
 )
 def test_config_reader(create_temp_config_file, config_string, expected_actions, expected_error_message):

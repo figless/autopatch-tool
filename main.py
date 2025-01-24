@@ -7,7 +7,11 @@ from src.tools.git import GitRepository
 
 
 # TEST PART
-config = ConfigReader("/Users/eduardabdullin/Desktop/job/regular_work/git.almalinux.org/autopatch/kernel/config.yaml")
+
+
+config = ConfigReader(
+    "/Users/eduardabdullin/Desktop/job/regular_work/git.almalinux.org/autopatch/kernel/config.yaml",
+)
 config.apply_actions("/Users/eduardabdullin/Desktop/job/regular_work/git.almalinux.org/rpms/kernel")
 
 

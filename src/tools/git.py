@@ -37,10 +37,11 @@ class GitRepositoryError(Exception):
         super().__init__(message)
 
 class GitRepository:
-    def __init__(self, url):
+    def __init__(self, url, clone: bool = True):
         self.url = url
         self.name = self.url.split("/")[-1].replace(".git", "")
-        self.__clone()
+        if clone:
+            self.__clone()
 
     def __clone(self):
         logger.info(f"Cloning repository {self.url}")

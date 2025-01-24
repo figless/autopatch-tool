@@ -1,0 +1,383 @@
+actions:
+  - add_files:
+      - type: "patch"
+        name: "0001-Enable-all-disabled-pci-devices-by-moving-to-unmaint.patch"
+        number: 2001
+      - type: "patch"
+        name: "0002-Bring-back-deprecated-pci-ids-to-mptsas-mptspi-drive.patch"
+        number: 2002
+      - type: "patch"
+        name: "0003-Bring-back-deprecated-pci-ids-to-hpsa-driver.patch"
+        number: 2003
+      - type: "patch"
+        name: "0004-Bring-back-deprecated-pci-ids-to-qla2xxx-driver.patch"
+        number: 2004
+      - type: "patch"
+        name: "0005-Bring-back-deprecated-pci-ids-to-lpfc-driver.patch"
+        number: 2005
+      - type: "patch"
+        name: "0006-Bring-back-deprecated-pci-ids-to-qla4xxx-driver.patch"
+        number: 2006
+      - type: "patch"
+        name: "0007-Bring-back-deprecated-pci-ids-to-be2iscsi-driver.patch"
+        number: 2007
+      - type: "source"
+        name: "almalinuxdup1.x509"
+        number: 100
+      - type: "source"
+        name: "almalinuxima.x509"
+        number: 103
+      - type: "source"
+        name: "almalinuximaca1.x509"
+        number: 102
+      - type: "source"
+        name: "almalinuxkpatch1.x509"
+        number: 101
+
+  - replace:
+      - target: "kernel-aarch64-64k-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-aarch64-64k-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-aarch64-64k-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-aarch64-64k-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        count: 1
+      - target: "kernel-aarch64-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-aarch64-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-aarch64-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-aarch64-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-aarch64-rt-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-aarch64-rt-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-aarch64-rt-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-aarch64-rt-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-ppc64le-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-ppc64le-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-ppc64le-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-ppc64le-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-s390x-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-s390x-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-s390x-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-s390x-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-s390x-zfcpdump-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-s390x-zfcpdump-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-x86_64-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-x86_64-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-x86_64-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-x86_64-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-x86_64-rt-debug-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-x86_64-rt-debug-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel-x86_64-rt-rhel.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel-x86_64-rt-rhel.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "x509.genkey.centos"
+        find: |
+              O = The CentOS Project
+              CN = CentOS Stream kernel signing key
+              emailAddress = security@centos.org
+        replace: |
+              O = AlmaLinux
+              CN = AlmaLinux kernel signing key
+              emailAddress = security@almalinux.org
+        count: 1
+      - target: "x509.genkey.rhel"
+        find: |
+              O = Red Hat
+              CN = Red Hat Enterprise Linux kernel signing key
+              emailAddress = secalert@redhat.com
+        replace: |
+              O = AlmaLinux
+              CN = AlmaLinux kernel signing key
+              emailAddress = security@almalinux.org
+        count: 1
+      - target: "spec"
+        find: "%ifnarch noarch"
+        replace: "%ifnarch x86_64"
+        count: 2
+      - target: "spec"
+        find: |
+              %if 0%{?centos}
+              %define pesign_name_0 centossecureboot201
+              %else
+              %ifarch x86_64 aarch64
+              %define pesign_name_0 redhatsecureboot501
+              %endif
+              %ifarch s390x
+              %define pesign_name_0 redhatsecureboot302
+              %endif
+              %ifarch ppc64le
+              %define pesign_name_0 redhatsecureboot701
+              %endif
+              %endif
+        replace: "%define pesign_name_0 almalinuxsecurebootca0"
+        count: 1
+      - target: "spec"
+        find: "Source103: almalinuxima.x509"
+        replace: |
+              Source103: almalinuxima.x509
+              Source104: almalinuxima.x509
+        count: 1
+      - target: "spec"
+        find: "Summary: Various documentation bits found in the kernel source"
+        replace: |
+              Summary: Various documentation bits found in the kernel source
+              BuildArch: noarch
+        count: 1
+      - target: "spec"
+        find: "Summary: The Red Hat Enterprise Linux kernel ABI symbol stablelists"
+        replace: |
+              Summary: The AlmaLinux kernel ABI symbol stablelists
+              BuildArch: noarch
+        count: 1
+      - target: "spec"
+        find: |
+              The kABI package contains information pertaining to the Red Hat Enterprise
+              Linux kernel ABI, including lists of kernel symbols that are needed by
+        replace: |
+              The kABI package contains information pertaining to the AlmaLinux
+              kernel ABI, including lists of kernel symbols that are needed by
+        count: 1
+      - target: "spec"
+        find: |
+              The package contains data describing the current ABI of the Red Hat Enterprise
+              Linux kernel, suitable for the kabi-dw tool.
+        replace: |
+              The package contains data describing the current ABI of the AlmaLinux
+              kernel, suitable for the kabi-dw tool.
+        count: 1
+      - target: "spec"
+        find: "This package provides kernel modules for the %{?2:%{2} }kernel package for Red Hat internal usage.\\"
+        replace: "This package provides kernel modules for the %{?2:%{2} }kernel package for AlmaLinux internal usage.\\"
+        count: 1
+      - target: "spec"
+        find: "%{expand:%%kernel_reqprovconf %{?1:%{1}} %{-o:%{-o}}}\\"
+        replace: |
+              %if "%{1}" == "rt" || "%{?1}" == ""\
+              Provides: almalinux(kernel-sig-key) = 202303\
+              Conflicts: shim-ia32 <= 15.6-1.el9.alma\
+              Conflicts: shim-x64 <= 15.6-1.el9.alma\
+              %endif\
+              %{expand:%%kernel_reqprovconf %{?1:%{1}} %{-o:%{-o}}}\
+        count: 1
+      - target: "spec"
+        find: "  sed -i 's/CONFIG_CRYPTO_FIPS_NAME=.*/CONFIG_CRYPTO_FIPS_NAME=\"Red Hat Enterprise Linux %{rhel} - Kernel Cryptographic API\"/' $i"
+        replace: "  sed -i 's/CONFIG_CRYPTO_FIPS_NAME=.*/CONFIG_CRYPTO_FIPS_NAME=\"AlmaLinux %{rhel} - Kernel Cryptographic API\"/' $i"
+        count: 1
+      - target: "spec"
+        find: "SBATsuffix=\"centos\""
+        replace: "SBATsuffix=\"rhel\""
+        count: 1
+      - target: "spec"
+        find: |
+              linux,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              linux.$SBATsuffix,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              kernel-uki-virt.$SBATsuffix,1,Red Hat,kernel-uki-virt,$KernelVer,mailto:secalert@redhat.com
+        replace: |
+              linux,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              linux,1,AlmaLinux,linux,$KernelVer,mailto:security@almalinux.org
+              linux.$SBATsuffix,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              linux.almalinux,1,AlmaLinux,linux,$KernelVer,mailto:security@almalinux.org
+              kernel-uki-virt.$SBATsuffix,1,Red Hat,kernel-uki-virt,$KernelVer,mailto:secalert@redhat.com
+              kernel-uki-virt.almalinux,1,AlmaLinux,kernel-uki-virt,$KernelVer,mailto:security@almalinux.org
+        count: 1
+      - target: "spec"
+        find: "UKI_secureboot_name=centossecureboot204"
+        replace: "UKI_secureboot_name=alsecureboot001"
+        count: 1
+      - target: "spec"
+        find: "UKI_secureboot_name=redhatsecureboot504"
+        replace: "UKI_secureboot_name=alsecureboot001"
+        count: 1
+      - target: "spec"
+        find: "# Red Hat UEFI Secure Boot CA cert, which can be used to authenticate the kernel"
+        replace: "# AlmaLinux UEFI Secure Boot CA cert, which can be used to authenticate the kernel"
+        count: 1
+        
+  - delete_line:
+      - target: "spec"
+        lines:
+          - |
+             Source100: rheldup3.x509
+             Source101: rhelkpatch1.x509
+             Source102: rhelimaca1.x509
+             Source103: rhelima.x509
+             Source104: rhelima_centos.x509
+          - |
+            # We may want to override files from the primary target in case of building
+            # against a flavour of it (eg. centos not rhel), thus override it here if
+            # necessary
+            if [ "%{primary_target}" == "rhel" ]; then
+            %if 0%{?centos}
+              echo "Updating scripts/sources to centos version"
+              RPM_SOURCE_DIR=$RPM_SOURCE_DIR ./update_scripts.sh centos
+            %else
+              echo "Not updating scripts/sources to centos version"
+            %endif
+            fi
+          - |
+                if [ "$KernelExtension" == "gz" ]; then
+                    gzip -f9 $SignImage
+                fi
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "hpsa: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "mptsas: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "megaraid_sas: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "qla2xxx: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "qla4xxx: bring back deprecated PCI ids"
+          - "lpfc: bring back deprecated PCI ids"
+          - "be2iscsi: bring back deprecated PCI ids"
+          - "kernel/rh_messages.h: enable all disabled pci devices by moving to unmaintained"
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use AlmaLinux OS secure boot cert"
+          - "Debrand for AlmaLinux OS"

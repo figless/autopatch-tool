@@ -6,12 +6,12 @@ from yaml import safe_load
 from tools.logger import logger
 
 
-def run_command(command, raise_on_failure=True, without_log=False, shell=False):
+def run_command(command, raise_on_failure=True, without_log=False, shell=False, cwd=None):
     try:
         command_str = command if shell else ' '.join(command)
         if not without_log:
             logger.debug(f"Running command: {command_str}")
-        result = subprocess.run(command, capture_output=True, text=True, shell=shell)
+        result = subprocess.run(command, capture_output=True, text=True, shell=shell, cwd=cwd)
         if result.returncode != 0:
             error_message = f"Command failed: {command_str}\n{result.stderr.strip()}"
             if not without_log:

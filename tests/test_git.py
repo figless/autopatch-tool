@@ -158,7 +158,7 @@ def test_git_reset_to_base_branch():
     ).stdout
 
     expected_commits = [
-        "Merge c8 into a8",
+        "Merge 'c8' into 'a8'",
         "Add not removable line",
         "Update spec",
         "Test commit 1",

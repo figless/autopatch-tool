@@ -6,6 +6,7 @@ import shutil
 import re
 
 from tools.logger import logger
+from tools.tools import run_command
 import tools.rpm
 
 class ActionNotAppliedError(Exception):
@@ -307,6 +308,30 @@ class ModifyReleaseAction(BaseAction):
             write_file_data(file_path, file)
 
 
+class RunScriptEntry(BaseEntry):
+    ALLOWED_KEYS = {
+        "script": str,
+    }
+    REQUIRED_KEYS = {"script"}
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.target = ""
+
+class RunScriptAction(BaseAction):
+    ENTRY_CLASS = RunScriptEntry
+
+    def execute(self, package_path: Path):
+        for entry in self.entries:
+            logger.info(f"Running script: {entry}")
+
+            script_file = (self.config_source.parent / "scripts") / entry.script
+            if not script_file.exists():
+                raise FileNotFoundError(f"Script file '{script_file}' does not exist")
+            
+            run_command(["bash", str(script_file)], cwd=package_path, raise_on_failure=True)
+            
+
 class ChangelogEntry(BaseEntry):
     ALLOWED_KEYS = {
         "name": str,
@@ -461,6 +486,7 @@ class ConfigReader:
         "modify_release": ModifyReleaseAction, # Done
         "delete_files": DeleteFilesAction, # Done
         "add_files": AddFilesAction,
+        "run_script": RunScriptAction,
     }
 
     def __init__(self, config_source):
