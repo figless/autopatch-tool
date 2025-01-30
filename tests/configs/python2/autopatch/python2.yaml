@@ -1,0 +1,16 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Add AlmaLinux to supported distros"
+
+  - add_files:
+      - type: "patch"
+        name: "python-2.7-almalinux_support.patch"
+        number: 5001

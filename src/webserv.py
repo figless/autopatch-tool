@@ -16,6 +16,7 @@ from tools.webserv_tools import (
     get_name_from_payload,
     get_branch_from_payload,
 )
+import tools.slack
 
 app = Flask('almalinux-debranding-tool')
 
@@ -54,6 +55,7 @@ def debrand_packages():
 
         message = apply_modifications(repo_name, branch)
         logger.info(message)
+        tools.slack.success_message(repo_name, branch)
 
         return jsonify_response(
             result={
@@ -62,7 +64,8 @@ def debrand_packages():
             status_code=HTTP_200_OK,
         )
     except Exception as err:
-        raise InternalServerError(str(err))
+        logger.error(err)
+        tools.slack.failed_message(repo_name, branch, str(err))
 
 
 @app.errorhandler(InternalServerError)

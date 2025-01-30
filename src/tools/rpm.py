@@ -10,13 +10,15 @@ from tools.tools import run_command
 rpmspec_definition = {
     "__python3": "/usr/bin/python3",
     "ldconfig_scriptlets(n:)": "%{nil}",
+    "forgemeta": "%{nil}",
+    "gometa": "%{nil}",
 }
 
 class PatchDirectiveType(Enum):
     CLASSIC = 0
     UPPER_P_W_SPACE = 1
     KERNEL = 2
-    GRUB2 = 3
+    PATCHES_FILE = 3
     AUTOSETUP = 4
     UPPER_P_N_SPACE = 5
 
@@ -41,7 +43,7 @@ def spec_contains_autochangelog(spec_info: list[str]) -> bool:
 
 def spec_contains_autosetup(spec_info: list[str]) -> bool:
     for line in spec_info:
-        if "%autosetup" in line:
+        if "%autosetup" in line or "%forgeautosetup" in line:
             return True
     return False
 
@@ -248,11 +250,11 @@ def generate_patch_apply_line(patch_number: str, patch_stem: str, patch_directiv
     else:
         raise RPMSpecFileParsingError("Unknown patch directive type")
 
-def define_type_patch_directive_type(spec_info: list[str], package_name: str,) -> PatchDirectiveType:
+def define_type_patch_directive_type(spec_info: list[str], package_name: str, patches_file: bool) -> PatchDirectiveType:
+    if patches_file:
+        return PatchDirectiveType.PATCHES_FILE 
     if package_name == 'kernel':
         return PatchDirectiveType.KERNEL
-    if package_name == 'grub2':
-        return PatchDirectiveType.GRUB2 
     if spec_contains_autosetup(spec_info):
         return PatchDirectiveType.AUTOSETUP
     for line in spec_info:
@@ -296,11 +298,20 @@ def find_setup_line(spec_info: list[str]) -> int:
     return None
 
 
+def get_ids_of_patches(spec_info: list[str]) -> list[int]:
+    patches = []
+    for line in spec_info:
+        if (result := re.match(r"^Patch([0-9]+):", line)):
+            patches.append(int(result.group(1)))
+    return patches
+
+
 def apply_patch(
         spec_info: list[str],
         patch_name: str,
         directive_type:DirectiveType,
         package_name: str,
+        patches_file: bool,
         patch_number: int = -1
     ) -> None:
     """
@@ -319,19 +330,22 @@ def apply_patch(
     else:
         new_patch_number = str(last_patch_number + 1)
         if patch_number != -1:
+            if patch_number in get_ids_of_patches(spec_info):
+                logger.error(f"patch_number {patch_number} already exists in the spec file")
+                raise RPMSpecFileParsingError(f"patch_number {patch_number} already exists in the spec file")
             new_patch_number = str(patch_number)
     spec_info.insert(last_patch_index, f"{directive_type.value}{new_patch_number}: {patch_name}")
 
-    patch_directive_type = define_type_patch_directive_type(spec_info, package_name)
+    patch_directive_type = define_type_patch_directive_type(spec_info, package_name, patches_file)
     
-    # Doesn't need to apply patch directive for autosetup package and for grub2 package
-    if directive_type == DirectiveType.PATCH and patch_directive_type != PatchDirectiveType.GRUB2:
+    # Doesn't need to apply patch directive for autosetup package and for packes with patches file
+    if directive_type == DirectiveType.PATCH and patch_directive_type != PatchDirectiveType.PATCHES_FILE:
         almalinux_block_exists = False
         insert_index = find_index_to_insert(spec_info)
         logger.debug(f"Patch directive type: {patch_directive_type} and insert index: {insert_index}")
 
         if insert_index is not None:
-            if patch_directive_type != PatchDirectiveType.AUTOSETUP and patch_directive_type != PatchDirectiveType.GRUB2:
+            if patch_directive_type != PatchDirectiveType.AUTOSETUP and patch_directive_type != PatchDirectiveType.PATCHES_FILE:
                 for i, line in enumerate(spec_info):
                     if re.match(rf"^# Applying AlmaLinux {directive_type.value}*$", line, re.IGNORECASE):
                         almalinux_block_exists = True

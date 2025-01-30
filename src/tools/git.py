@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 from typing import Optional
 import os
+import requests
 
 from immudb_wrapper import ImmudbWrapper
 
@@ -149,3 +150,48 @@ class GitRepository:
 
         if not no_commit:
             self.commit(f"Merge '{base_branch}' into '{target_branch}'")
+
+
+
+class GitAlmaLinux:
+    _almalinux_git = 'git.almalinux.org'
+    _almalinux_git_url = f'https://{_almalinux_git}'
+    _almalinux_git_api = f'https://{_almalinux_git}/api/v1'  # https://git.almalinux.org/api/v1
+    _autopatch_namespace = 'autopatch'
+
+    @staticmethod
+    def _iterate_over_pages(url):
+        all_results = []
+        page = 1
+
+        with requests.Session() as session:
+            while True:
+                full_url = f"{url}?page={page}&limit=30"
+                response = session.get(full_url, timeout=10)
+
+                if response.status_code != 200:
+                    logger.error(f"Failed to get data from {full_url} with status code {response.status_code}:\n{response.text}")
+                    raise requests.HTTPError(f"Failed to get data from {full_url}: {response.status_code}")
+
+                data = response.json()
+                if not data:
+                    break
+
+                all_results.extend(data)
+                page += 1
+
+        return all_results
+
+    @staticmethod
+    def get_list_of_modified_packages():
+        url = f"{GitAlmaLinux._almalinux_git_api}/orgs/{GitAlmaLinux._autopatch_namespace}/repos"
+        repos = GitAlmaLinux._iterate_over_pages(url)
+
+        return [repo['name'] for repo in repos if not repo['archived']]
+
+    @staticmethod
+    def get_branches_from_package(package_name):
+        url = f"{GitAlmaLinux._almalinux_git_api}/repos/{GitAlmaLinux._autopatch_namespace}/{package_name}/branches"
+        branches = GitAlmaLinux._iterate_over_pages(url)
+
+        return [branch['name'] for branch in branches]

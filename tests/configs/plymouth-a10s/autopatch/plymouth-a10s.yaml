@@ -1,0 +1,23 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              # Drop glow, it's not very Fedora-y
+              rm -rf $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/glow
+        replace: |
+              # Drop glow, it's not very Fedora-y
+              rm -rf $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/glow
+              
+              # add in the watermark to spinner and bgrt
+              (cd $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/spinner; ln -sf ../../../pixmaps/fedora-gdm-logo.png watermark.png)
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Alex Laurie"
+        email: "alex.r.laurie@gmail.com"
+        line:
+          - "AlmaLinux change: Add in the symlink for fedora-gdm-logo.png to watermark.png in the spinner theme directory to ensure the AlmaLinux watermark is displayed in plymouth."

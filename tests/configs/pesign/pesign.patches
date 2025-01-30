@@ -1,0 +1,2 @@
+Patch0001: 0001-cms_common-Fixed-Segmentation-fault.patch
+Patch0002: 0002-Fix-reversed-calloc-arguments.patch

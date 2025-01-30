@@ -1,6 +1,6 @@
 actions:
   - replace:
-      - target: "kernel-aarch64-debug.config"
+      - target: "kernel*.config"
         find: |
               # CONFIG_BE2NET_BE2 is not set
               # CONFIG_BE2NET_BE3 is not set
@@ -8,103 +8,7 @@ actions:
               CONFIG_BE2NET_BE2=y
               CONFIG_BE2NET_BE3=y
         count: 1
-      - target: "kernel-aarch64-debug.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-aarch64.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-aarch64.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-ppc64le-debug.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-ppc64le-debug.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-ppc64le.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-ppc64le.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-s390x-debug.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-s390x-debug.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-s390x-zfcpdump.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-s390x-zfcpdump.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-s390x.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-s390x.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-x86_64-debug.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-x86_64-debug.config"
-        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
-        replace: "CONFIG_MLX4_CORE_GEN2=y"
-        count: 1
-      - target: "kernel-x86_64.config"
-        find: |
-              # CONFIG_BE2NET_BE2 is not set
-              # CONFIG_BE2NET_BE3 is not set
-        replace: |
-              CONFIG_BE2NET_BE2=y
-              CONFIG_BE2NET_BE3=y
-        count: 1
-      - target: "kernel-x86_64.config"
+      - target: "kernel*.config"
         find: "# CONFIG_MLX4_CORE_GEN2 is not set"
         replace: "CONFIG_MLX4_CORE_GEN2=y"
         count: 1

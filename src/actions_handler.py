@@ -50,6 +50,11 @@ def process_lines(file_path: Path, target: str, find_lines:list[str], replace_li
                 break
 
         if len(find_lines) == 1:
+            # Skip comments in spec file only with target as spec and find_lines as single line
+            if target == "spec":
+                if tools.rpm.is_spec_comment(file[i]) and not tools.rpm.is_spec_comment(find_lines[0]):
+                    i += 1
+                    continue
             line = file[i]
             count_in_line = line.count(find_lines[0])
             if count_in_line > 0:
@@ -162,7 +167,7 @@ class BaseEntry:
                 raise Exception(f"More than one .spec file present in {package_path}")
             if len(spec_files) == 0:
                 raise Exception(f"No .spec file present in {package_path}")
-            return spec_files[0]
+            return spec_files[0] if first else spec_files
         return self.get_file_name(package_path, self.target, first)
 
 
@@ -261,13 +266,13 @@ class ReplaceAction(BaseAction):
 
     def execute(self, package_path: Path):
         for entry in self.entries:
-            file_path = entry.get_target_file_name(package_path)
+            file_paths = entry.get_target_file_name(package_path, first=False)
             find_lines = entry.find.splitlines() if "\n" in entry.find else [entry.find]
             replace_lines = entry.replace.splitlines() if "\n" in entry.replace else [entry.replace]
 
-            logger.info(f"Applying: {entry} to {file_path}")
-
-            process_lines(file_path, entry.target, find_lines, replace_lines, entry.count)
+            for file_path in file_paths:
+                logger.info(f"Applying: {entry} to {file_path}")
+                process_lines(file_path, entry.target, find_lines, replace_lines, entry.count)
 
 
 class ModifyReleaseEntry(BaseEntry):
@@ -432,10 +437,12 @@ class AddFilesAction(BaseAction):
     def execute(self, package_path: Path):
         for entry in self.entries:
             package_name = package_path.name
+            is_patches_file = any(Path(package_path).glob("*.patches"))
+
             if entry.type == "patch":
                 directive_type = tools.rpm.DirectiveType.PATCH
-                if package_name == "grub2":
-                    entry.target = "grub.patches"
+                if is_patches_file:
+                    entry.target = entry.get_file_name(package_path, "*.patches").name
             elif entry.type == "source":
                 directive_type = tools.rpm.DirectiveType.SOURCE
 
@@ -449,6 +456,7 @@ class AddFilesAction(BaseAction):
                 entry.name,
                 directive_type,
                 package_name,
+                is_patches_file,
                 entry.number if entry.number != "Latest" else -1
             )
             self.copy_file_to_package(package_path, entry.name)

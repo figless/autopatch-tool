@@ -1,0 +1,31 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: |
+              if ping -c 3 -w 20 8.8.8.8 && wget http://libguestfs.org -O /dev/null; then
+                extra=
+              else
+        replace: |
+              if ping -c 3 -w 20 8.8.8.8 && wget http://libguestfs.org -O /dev/null; then
+                # AlmaLinux: avoid permission denied for yum/dnf cache
+                mkdir cachedir
+                sed -e "s|/var/cache/yum|$(pwd)/cachedir|" -e "s|/var/cache/dnf|$(pwd)/cachedir|" /etc/dnf/dnf.conf > yum.conf
+                extra=--with-supermin-packager-config=$(pwd)/yum.conf
+              else
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Fix build for AlmaLinux"
+          - "Avoid permission denied for yum/dnf cache"
+
+  - add_files:
+      - type: "patch"
+        name: "1000-Add-AlmaLinux-detection.patch"
+        number: 1000

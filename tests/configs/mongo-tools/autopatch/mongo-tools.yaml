@@ -1,0 +1,46 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%global with_check 1"
+        replace: |
+              %global with_check 1
+              %undefine _debugsource_packages
+        count: 1
+      - target: "spec"
+        find: "scl enable go-toolset-1.10 -- go build -buildmode pie -compiler gc -tags=rpm_crashtraceback -ldflags \"${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\\\n') -extldflags '%__global_ldflags'\" -a -v -x %{?**};\\"
+        replace: "go build -buildmode pie -compiler gc -tags=rpm_crashtraceback -ldflags \"${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\\\n') -extldflags '%__global_ldflags'\" -a -v -x %{?**};\\"
+        count: 1
+      - target: "spec"
+        find: "scl enable go-toolset-1.10 -- go build -compiler gc -tags=rpm_crashtraceback -ldflags \"${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\\\n') -extldflags '%__global_ldflags'\" -a -v -x %{?**};\\"
+        replace: "go build -compiler gc -tags=rpm_crashtraceback -ldflags \"${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\\\n') -extldflags '%__global_ldflags'\" -a -v -x %{?**};\\"
+        count: 1
+      - target: "spec"
+        find: "%define gotest() scl enable go-toolset-1.10 'go test -compiler gc -ldflags \"${LDFLAGS:-}\" %{?**}';"
+        replace: "%define gotest() go test -compiler gc -ldflags \"${LDFLAGS:-}\" %{?**};"
+        count: 1
+      - target: "spec"
+        find: "ExclusiveArch:  x86_64 aarch64 ppc64le s390x"
+        replace: "ExclusiveArch:  x86_64 aarch64 ppc64le s390x %{arm}"
+        count: 1
+      - target: "spec"
+        find: "BuildRequires:  go-toolset-1.10-golang"
+        replace: "BuildRequires:  golang"
+      - target: "spec"
+        find: "%gotest"
+        replace: "#%gotest"
+        count: 8
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Fix BR, disable tests"
+
+  - add_files:
+      - type: "patch"
+        name: "mongodb-tools-fixparam.patch"
+        number: 1
