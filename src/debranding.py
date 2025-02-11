@@ -33,7 +33,7 @@ def apply_modifications(package, branch, set_custom_tag: str = ""):
         git_repo = GitRepository(f"git@{GitAlmaLinux._almalinux_git}:{GitAlmaLinux._rpms_namespace}/{package}.git")
         git_repo.checkout_branch(branch)
         if not set_custom_tag:
-            tag = git_repo.get_latest_tag().replace("imports/c", "changed/a", 1)
+            tag = git_repo.get_latest_tag().replace("imports/c", "changed/a", 1) + config.get_release_suffix()
         else:
             tag = set_custom_tag
         git_repo.pull()

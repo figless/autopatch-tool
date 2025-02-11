@@ -588,3 +588,16 @@ class ConfigReader:
                     email = action_entry.email
                 changelog.extend(action_entry.line)
         return changelog, name, email
+    
+    def get_release_suffix(self):
+        """
+        Returns release suffix from modify_release action
+        """
+        suffixes = []
+        for action in self.actions:
+            if not isinstance(action, ModifyReleaseAction):
+                continue
+            for action_entry in action.entries:
+                suffixes.append(action_entry.suffix)
+
+        return ''.join(suffixes)
