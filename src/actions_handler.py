@@ -598,6 +598,7 @@ class ConfigReader:
             if not isinstance(action, ModifyReleaseAction):
                 continue
             for action_entry in action.entries:
-                suffixes.append(action_entry.suffix)
+                if action_entry.enabled:
+                    suffixes.append(action_entry.suffix)
 
         return ''.join(suffixes)
