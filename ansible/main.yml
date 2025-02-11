@@ -1,0 +1,7 @@
+---
+
+- name: Deploy the AlmaLinux GIT updater
+  hosts: all
+  become: yes
+  roles:
+    - deploy

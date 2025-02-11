@@ -1,0 +1,208 @@
+%global efi_vendor almalinux
+%global efidir almalinux
+%global efi_esp_dir /boot/efi/EFI/%{efidir}
+
+Name:		shim
+Version:	15.8
+Release:	4%{?dist}.alma.2
+Summary:	First-stage UEFI bootloader
+License:	BSD
+URL:		https://github.com/rhboot/shim/
+BuildRequires:	efi-filesystem
+BuildRequires:	efi-srpm-macros >= 6
+
+ExclusiveArch:	%{efi}
+# and we don't have shim-unsigned-arm builds *yet*
+ExcludeArch:	%{arm} %{ix86}
+
+Source0:	shim.rpmmacros
+
+# keep these two lists of sources synched up arch-wise.  That is 0 and 10
+# match, 1 and 11 match, ...
+Source10:	BOOTAA64.CSV
+Source20:	shimaa64.efi
+Source30:	mmaa64.efi
+Source40:	fbaa64.efi
+Source12:	BOOTX64.CSV
+Source22:	shimx64.efi
+Source32:	mmx64.efi
+Source42:	fbx64.efi
+
+# AlmaLinux Source
+Source1: almalinuxsecurebootca0.cer
+#Source13:	BOOTARM.CSV
+#Source23:	shimarm.efi
+#Source33:	mmarm.efi
+#Source43:	fbarm.efi
+
+%include %{SOURCE0}
+
+BuildRequires:	pesign >= 0.112-20.fc27
+# Right now we're just including all of the parts from them as sources here
+# to make the build+errata process less maddening.  We do this because
+# %%{efi} won't expand before choosing where to make the src.rpm in koji,
+# and we could be on a non-efi architecture, in which case we won't have a
+# valid expansion here...
+# %% ifarch x86_64
+# BuildRequires:	%% {unsignedx64} = %% {shimverx64}
+# BuildRequires:	%% {unsignedia32} = %% {shimveria32}
+# %% endif
+# %% ifarch aarch64
+# BuildRequires:	%% {unsignedaa64} = %% {shimveraa64}
+# %% endif
+#%%ifarch arm
+#BuildRequires:	%%{unsignedarm} = %%{shimverarm}
+#%%endif
+
+%description
+Initial UEFI bootloader that handles chaining to a trusted full bootloader
+under secure boot environments. This package contains the version signed by
+the UEFI signing service.
+
+%define_pkg -a %{efi_arch} -p 1
+%if %{efi_has_alt_arch}
+%define_pkg -a %{efi_alt_arch}
+%endif
+
+%prep
+cd %{_builddir}
+rm -rf shim-%{version}
+mkdir shim-%{version}
+
+%build
+export PS4='${LINENO}: '
+
+cd shim-%{version}
+%if %{efi_has_alt_arch}
+%define_build -a %{efi_alt_arch} -A %{efi_alt_arch_upper} -i %{shimefialt} -b yes -c %{is_alt_signed} -d %{shimdiralt}
+%endif
+%define_build -a %{efi_arch} -A %{efi_arch_upper} -i %{shimefi} -b yes -c %{is_signed} -d %{_sourcedir}
+
+%install
+rm -rf $RPM_BUILD_ROOT
+cd shim-%{version}
+install -D -d -m 0755 $RPM_BUILD_ROOT/boot/
+install -D -d -m 0700 $RPM_BUILD_ROOT%{efi_esp_root}/
+install -D -d -m 0700 $RPM_BUILD_ROOT%{efi_esp_efi}/
+install -D -d -m 0700 $RPM_BUILD_ROOT%{efi_esp_dir}/
+install -D -d -m 0700 $RPM_BUILD_ROOT%{efi_esp_boot}/
+
+%do_install -a %{efi_arch} -A %{efi_arch_upper} -b %{bootcsv}
+%if %{efi_has_alt_arch}
+%do_install -a %{efi_alt_arch} -A %{efi_alt_arch_upper} -b %{bootcsvalt}
+%endif
+
+%if %{provide_legacy_shim}
+install -m 0700 %{shimefi} $RPM_BUILD_ROOT%{efi_esp_dir}/shim.efi
+%endif
+
+( cd $RPM_BUILD_ROOT ; find .%{efi_esp_root} -type f ) \
+  | sed -e 's/\./\^/' -e 's,^\\\./,.*/,' -e 's,$,$,' > %{__brp_mangle_shebangs_exclude_from_file}
+
+%define_files -a %{efi_arch} -A %{efi_arch_upper}
+%if %{efi_has_alt_arch}
+%define_files -a %{efi_alt_arch} -A %{efi_alt_arch_upper}
+%endif
+
+%if %{provide_legacy_shim}
+%verify(not mtime) %{efi_esp_dir}/shim.efi
+%endif
+
+%changelog
+* Tue Jan 14 2025 Eduard Abdullin <eabdullin@almalinux.org> - 15.8-4.alma.2
+- Add SB for aarch64
+- Use AlmaLinux cert
+
+* Tue Apr 16 2024 Peter Jones <pjones@redhat.com> - 15.8-4
+- Bump the release to *-4* to work around a build system issue.
+  Related: RHEL-11259
+
+* Wed Apr 10 2024 Peter Jones <pjones@redhat.com> - 15.8-3
+- Bump the release to -3 to work around a build system issue.
+  Related: RHEL-11259
+
+* Thu Mar 28 2024 Peter Jones <pjones@redhat.com> - 15.8-2.el8
+- Fix rpm verify issue found in testing.
+  Related: RHEL-11259
+
+* Thu Mar 21 2024 Peter Jones <pjones@redhat.com> - 15.8-1.el8
+- Update to shim-15.8 for CVE-2023-40547
+  Resolves: RHEL-11259
+
+* Wed Apr 20 2022 Peter Jones <pjones@redhat.com> - 15.5-2.el8
+- Include the actual signed shim binaries.
+  Resolves: rhbz#1970632
+  Resolves: rhbz#1982071
+  Resolves: rhbz#2000946
+  Resolves: rhbz#2002265
+
+* Tue Apr 19 2022 Peter Jones <pjones@redhat.com> - 15.5-1
+- Update to shim-15.5
+  Resolves: rhbz#1970632
+  Resolves: rhbz#1982071
+  Resolves: rhbz#2000946
+  Resolves: rhbz#2002265
+
+* Mon Sep 21 2020 Javier Martinez Canillas <javierm@redhat.com> - 15-16
+- Fix an incorrect allocation size
+  Resolves: rhbz#1877253
+
+* Fri Jul 31 2020 Peter Jones <pjones@redhat.com> - 15-15
+- Update once again for new signed shim builds.
+  Resolves: rhbz#1861977
+
+* Tue Jul 28 2020 Peter Jones <pjones@redhat.com> - 15-14
+- Get rid of our %%dist hack for now.
+
+* Tue Jul 28 2020 Peter Jones <pjones@redhat.com> - 15-13
+- New signing keys
+  Related: CVE-2020-10713
+  Related: CVE-2020-14308
+  Related: CVE-2020-14309
+  Related: CVE-2020-14310
+  Related: CVE-2020-14311
+
+* Thu Jun 11 2020 Javier Martinez Canillas <javierm@redhat.com> - 15-12
+- Fix firmware update bug in aarch64 caused by shim ignoring arguments
+  Resolves: rhbz#1830871
+- Fix a shim crash when attempting to netboot
+  Resolves: rhbz#1795654
+
+* Fri Jun 07 2019 Javier Martinez Canillas <javierm@redhat.com> - 15-11
+- Update the shim-unsigned-aarch64 version number
+  Related: rhbz#1715879
+
+* Fri Jun 07 2019 Javier Martinez Canillas <javierm@redhat.com> - 15-10
+- Add a gating.yaml file so the package can be properly gated
+  Related: rhbz#1681809
+
+* Wed Jun 05 2019 Javier Martinez Canillas <javierm@redhat.com> - 15-9
+- Bump the NVR
+  Related: rhbz#1715879
+
+* Wed Jun 05 2019 Javier Martinez Canillas <javierm@redhat.com> - 15-7
+- Make EFI variable copying fatal only on secureboot enabled systems
+  Resolves: rhbz#1715879
+- Fix booting shim from an EFI shell using a relative path
+  Resolves: rhbz#1717061
+
+* Thu Mar 14 2019 Peter Jones <pjones@redhat.com> - 15-6
+- Fix MoK mirroring issue which breaks kdump without intervention
+  Resolves: rhbz#1668966
+
+* Thu Jan 24 2019 Peter Jones <pjones@redhat.com> - 15-5
+- Rebuild for signing once again. If the signer actually works, then:
+  Resolves: rhbz#1620941
+
+* Tue Oct 16 2018 Peter Jones <pjones@redhat.com> - 15-4
+- Rebuild for signing
+  Resolves: rhbz#1620941
+
+* Mon Aug 13 2018 Troy Dawson <tdawson@redhat.com>
+- Release Bumped for el8 Mass Rebuild
+
+* Sat Aug 11 2018 Troy Dawson <tdawson@redhat.com>
+- Release Bumped for el8+8 Mass Rebuild
+
+* Mon Jul 23 2018 Peter Jones <pjones@redhat.com> - 15-1
+- Build for RHEL 8

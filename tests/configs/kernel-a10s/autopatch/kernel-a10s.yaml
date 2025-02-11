@@ -1,0 +1,324 @@
+actions:
+
+  - add_files:
+      - type: "source"
+        name: "almalinuxdup1.x509"
+        number: 100
+      - type: "source"
+        name: "almalinuxkpatch1.x509"
+        number: 101
+      - type: "source"
+        name: "almalinuximaca1.x509"
+        number: 103
+      - type: "source"
+        name: "almalinuxima.x509"
+        number: 104
+      - type: "patch"
+        name: "0001-Enable-all-disabled-pci-devices-by-moving-to-unmaint.patch"
+        number: 2001
+      - type: "patch"
+        name: "0002-Bring-back-deprecated-pci-ids-to-mptsas-mptspi-drive.patch"
+        number: 2002
+      - type: "patch"
+        name: "0003-Bring-back-deprecated-pci-ids-to-hpsa-driver.patch"
+        number: 2003
+      - type: "patch"
+        name: "0004-Bring-back-deprecated-pci-ids-to-qla2xxx-driver.patch"
+        number: 2004
+      - type: "patch"
+        name: "0005-Bring-back-deprecated-pci-ids-to-lpfc-driver.patch"
+        number: 2005
+      - type: "patch"
+        name: "0006-Bring-back-deprecated-pci-ids-to-qla4xxx-driver.patch"
+        number: 2006
+      - type: "patch"
+        name: "0007-Bring-back-deprecated-pci-ids-to-be2iscsi-driver.patch"
+        number: 2007
+      - type: "patch"
+        name: "0008-Bring-back-deprecated-pci-ids-to-megaraid_sas-driver.patch"
+        number: 2008
+      - type: "patch"
+        name: "0009-Bring-back-deprecated-pci-ids-to-mpt3sas-driver.patch"
+        number: 2009
+      - type: "patch"
+        name: "0010-Bring-back-deprecated-pci-ids-to-aacraid-driver.patch"
+        number: 2010
+
+  - replace:
+      - target: "kernel*.config"
+        find: |
+              # CONFIG_BE2NET_BE2 is not set
+              # CONFIG_BE2NET_BE3 is not set
+        replace: |
+              CONFIG_BE2NET_BE2=y
+              CONFIG_BE2NET_BE3=y
+        count: 1
+      - target: "kernel*aarch64*.config"
+        find: "# CONFIG_MLX4_CORE_GEN2 is not set"
+        replace: "CONFIG_MLX4_CORE_GEN2=y"
+        count: 1
+      - target: "kernel*.config"
+        find: |
+              # CONFIG_MLX4_EN is not set
+              # CONFIG_MLX4_INFINIBAND is not set
+        replace: |
+              CONFIG_MLX4_EN=m
+              CONFIG_MLX4_INFINIBAND=m
+        count: 1
+      - target: "kernel*ppc64le*.config"
+        find: |
+              # CONFIG_MLX4_CORE_GEN2 is not set
+              # CONFIG_MLX4_CORE is not set
+        replace: |
+              CONFIG_MLX4_CORE_GEN2=y
+              CONFIG_MLX4_CORE=m
+        count: 1
+      - target: "kernel*x86_64*.config"
+        find: |
+              # CONFIG_MLX4_CORE_GEN2 is not set
+              # CONFIG_MLX4_CORE is not set
+        replace: |
+              CONFIG_MLX4_CORE_GEN2=y
+              CONFIG_MLX4_CORE=m
+        count: 1
+      - target: "kernel*s390x*.config"
+        find: |
+              # CONFIG_MLX4_CORE_GEN2 is not set
+              # CONFIG_MLX4_CORE is not set
+        replace: |
+              CONFIG_MLX4_CORE_GEN2=y
+              CONFIG_MLX4_CORE=m
+        count: 1
+      - target: "spec"
+        find: |
+              # Disable frame pointers
+              %undefine _include_frame_pointers
+        replace: |
+              # Disable frame pointers
+              %if 0%{?almalinux} < 10
+              %undefine _include_frame_pointers
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              %ifnarch noarch
+              %define with_kernel_abi_stablelists 0
+              %endif
+        replace: |
+              %ifnarch aarch64
+              %define with_kernel_abi_stablelists 0
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              # only package docs noarch
+              %ifnarch noarch
+              %define with_doc 0
+              %define doc_build_fail true
+              %endif
+        replace: |
+              # only package docs noarch
+              %ifnarch aarch64
+              %define with_doc 0
+              %define doc_build_fail true
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              %ifarch x86_64
+              %define asmarch x86
+              %define kernel_image arch/x86/boot/bzImage
+              %endif
+        replace: |
+              %ifarch x86_64
+              %define asmarch x86
+              %define kernel_image arch/x86/boot/bzImage
+              %endif
+
+              %ifarch x86_64_v2
+              %define hdrarch x86_64
+              %define asmarch x86
+              %define kernel_image arch/x86/boot/bzImage
+              %endif
+        count: 1
+      - target: "spec"
+        find: "ExclusiveArch: noarch i386 i686 x86_64 s390x aarch64 ppc64le"
+        replace: "ExclusiveArch: noarch i386 i686 x86_64 s390x aarch64 ppc64le x86_64_v2"
+        count: 1
+      - target: "spec"
+        find: "Source104: almalinuxima.x509"
+        replace: |
+              Source104: almalinuxima.x509
+              Source105: almalinuxima.x509
+              Source106: almalinuxima.x509
+        count: 1
+      - target: "spec"
+        find: |
+              %package doc
+              Summary: Various documentation bits found in the kernel source
+              Group: Documentation
+              %description doc
+        replace: |
+              %package doc
+              Summary: Various documentation bits found in the kernel source
+              BuildArch: noarch
+              Group: Documentation
+              %description doc
+        count: 1
+      - target: "spec"
+        find: |
+              %package -n %{package_name}-abi-stablelists
+              Summary: The Red Hat Enterprise Linux kernel ABI symbol stablelists
+        replace: |
+              %package -n %{package_name}-abi-stablelists
+              Summary: The AlmaLinux kernel ABI symbol stablelists
+              BuildArch: noarch
+        count: 1
+      - target: "spec"
+        find: |
+              The kABI package contains information pertaining to the Red Hat Enterprise
+              Linux kernel ABI, including lists of kernel symbols that are needed by
+        replace: |
+              The kABI package contains information pertaining to the AlmaLinux
+              kernel ABI, including lists of kernel symbols that are needed by
+        count: 1
+      - target: "spec"
+        find: |
+              The package contains data describing the current ABI of the Red Hat Enterprise
+              Linux kernel, suitable for the kabi-dw tool.
+        replace: |
+              The package contains data describing the current ABI of the AlmaLinux
+              kernel, suitable for the kabi-dw tool.
+        count: 1
+      - target: "spec"
+        find: "This package provides kernel modules for the %{?2:%{2} }kernel package for Red Hat internal usage.\\"
+        replace: "This package provides kernel modules for the %{?2:%{2} }kernel package for AlmaLinux internal usage.\\"
+        count: 1
+      - target: "spec"
+        find: "This package provides kernel modules for the %{?2:%{2} }kernel package for Red Hat partners usage.\\"
+        replace: "This package provides kernel modules for the %{?2:%{2} }kernel package for AlmaLinux partners usage.\\"
+        count: 1
+      - target: "spec"
+        find: |
+              for i in *.config; do
+                sed -i 's/CONFIG_CRYPTO_FIPS_NAME=.*/CONFIG_CRYPTO_FIPS_NAME="Red Hat Enterprise Linux %{rhel} - Kernel Cryptographic API"/' $i
+              done
+        replace: |
+              for i in *.config; do
+                sed -i 's/CONFIG_CRYPTO_FIPS_NAME=.*/CONFIG_CRYPTO_FIPS_NAME="AlmaLinux %{rhel} - Kernel Cryptographic API"/' $i
+              done
+        count: 1
+      - target: "spec"
+        find: |
+              %if 0%{?centos}
+                      SBATsuffix="centos"
+              %else
+        replace: |
+              %if 0%{?centos}
+                      SBATsuffix="rhel"
+              %else
+        count: 1
+      - target: "spec"
+        find: |
+              linux,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              linux.$SBATsuffix,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              kernel-uki-virt.$SBATsuffix,1,Red Hat,kernel-uki-virt,$KernelVer,mailto:secalert@redhat.com
+        replace: |
+              linux,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              linux,1,AlmaLinux,linux,$KernelVer,mailto:security@almalinux.org
+              linux.$SBATsuffix,1,Red Hat,linux,$KernelVer,mailto:secalert@redhat.com
+              linux.almalinux,1,AlmaLinux,linux,$KernelVer,mailto:security@almalinux.org
+              kernel-uki-virt.$SBATsuffix,1,Red Hat,kernel-uki-virt,$KernelVer,mailto:secalert@redhat.com
+              kernel-uki-virt,almalinux,1,AlmaLinux,kernel-uki-virt,$KernelVer,mailto:security@almalinux.org
+        count: 1
+      - target: "x509.genkey.centos"
+        find: |
+              O = The CentOS Project
+              CN = CentOS Stream kernel signing key
+              emailAddress = security@centos.org
+        replace: |
+              O = AlmaLinux
+              CN = AlmaLinux kernel signing key
+              emailAddress = security@almalinux.org
+        count: 1
+      - target: "x509.genkey.rhel"
+        find: |
+              O = Red Hat
+              CN = Red Hat Enterprise Linux kernel signing key
+              emailAddress = secalert@redhat.com
+        replace: |
+              O = AlmaLinux
+              CN = AlmaLinux kernel signing key
+              emailAddress = security@almalinux.org
+        count: 1
+      - target: "spec"
+        find: |
+              Source32: %{name}-x86_64-rhel.config
+              Source33: %{name}-x86_64-debug-rhel.config
+        replace: |
+              Source32: %{name}-x86_64-rhel.config
+              Source33: %{name}-x86_64-debug-rhel.config
+              Source10001: %{name}-x86_64_v2-rhel.config
+              Source10002: %{name}-x86_64_v2-debug-rhel.config
+        count: 1
+      - target: "spec"
+        find: |
+              Source204: Module.kabi_x86_64
+              Source205: Module.kabi_riscv64
+        replace: |
+              Source204: Module.kabi_x86_64
+              Source205: Module.kabi_riscv64
+              Source206: Module.kabi_x86_64_v2
+        count: 1
+      - target: "spec"
+        find: |
+              Source213: Module.kabi_dup_x86_64
+              Source214: Module.kabi_dup_riscv64
+        replace: |
+              Source213: Module.kabi_dup_x86_64
+              Source214: Module.kabi_dup_riscv64
+              Source215: Module.kabi_dup_x86_64_v2
+        count: 1
+      - target: "spec"
+        find: |
+              Source476: %{name}-x86_64-rt-rhel.config
+              Source477: %{name}-x86_64-rt-debug-rhel.config
+        replace: |
+              Source476: %{name}-x86_64-rt-rhel.config
+              Source477: %{name}-x86_64-rt-debug-rhel.config
+              Source478: %{name}-x86_64_v2-rt-rhel.config
+              Source479: %{name}-x86_64_v2-rt-debug-rhel.config
+        count: 1
+
+  - run_script:
+      - script: "create_symlinks.sh"
+
+  - delete_line:
+      - target: "spec"
+        lines:
+          - |
+              Source100: rheldup3.x509
+              Source101: rhelkpatch1.x509
+          - |
+              Source103: rhelimaca1.x509
+              Source104: rhelima.x509
+              Source105: rhelima_centos.x509
+              Source106: fedoraimaca.x509
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "hpsa: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "mptsas: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "megaraid_sas: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "qla2xxx: bring back deprecated PCI ids #CFHack #CFHack2024"
+          - "qla4xxx: bring back deprecated PCI ids"
+          - "lpfc: bring back deprecated PCI ids"
+          - "be2iscsi: bring back deprecated PCI ids"
+          - "kernel/rh_messages.h: enable all disabled pci devices by moving to unmaintained"
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use AlmaLinux OS secure boot cert"
+          - "Debrand for AlmaLinux OS"

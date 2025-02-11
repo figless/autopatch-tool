@@ -1,0 +1,26 @@
+actions:
+  - replace:
+    - target: "spec"
+      find: "https://access.redhat.com/support"
+      replace: "https://wiki.almalinux.org/Help-and-Support"
+      count: 1
+    - target: "spec"
+      find: "mailto:secalert@redhat.com"
+      replace: "mailto:security@almalinux.org"
+      count: 1
+
+  - add_files:
+    - type: "patch"
+      name: "9000-core-reorder-systemd-arguments-on-reexec.patch"
+      number: 9000
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+    - name: "Andrew Lukoshko"
+      email: "alukoshko@almalinux.org"
+      line:
+        - "core: reorder systemd arguments on reexe"
+        - "Debrand for AlmaLinux"

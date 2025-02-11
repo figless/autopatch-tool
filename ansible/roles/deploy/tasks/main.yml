@@ -1,0 +1,12 @@
+---
+- name: Deploy common actions
+  include_tasks: common_actions.yml
+
+- name: Save secret credentials
+  include_tasks: save_secret_credentials.yml
+
+- name: Deploy files
+  include_tasks: deploy_files.yml
+
+- name: Deploy systemd service
+  include_tasks: systemd_service.yml

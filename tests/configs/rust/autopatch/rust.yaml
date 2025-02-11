@@ -1,0 +1,69 @@
+actions:
+  - replace:
+      - target: "macros.rust-toolset"
+        find: "-Cstrip=none"
+        replace: |
+                  -Cstrip=none
+                    %[0%{?x86_64_v2} ? "-Ctarget_cpu=x86-64-v2" : ""]
+        count: 1
+
+      - target: "spec"
+        find: |
+            elseif arch == "riscv64" then
+              arch = "riscv64gc"
+        replace: |
+            elseif arch == "riscv64" then
+              arch = "riscv64gc"
+            elseif arch == "x86_64_v2" then
+              arch = "x86_64"
+        count: 1
+      - target: "spec"
+        find: |
+              %global rustc_target_cpus %{lua: do
+                local fedora = tonumber(rpm.expand("0%{?fedora}"))
+                local rhel = tonumber(rpm.expand("0%{?rhel}"))
+                local env =
+                  " RUSTC_TARGET_CPU_X86_64=x86-64" .. ((rhel >= 10) and "-v3" or (rhel == 9) and "-v2" or "")
+                  .. " RUSTC_TARGET_CPU_PPC64LE=" .. ((rhel >= 9) and "pwr9" or "pwr8")
+                  .. " RUSTC_TARGET_CPU_S390X=" ..
+                      ((rhel >= 9) and "z14" or (rhel == 8 or fedora >= 38) and "z13" or
+                       (fedora >= 26) and "zEC12" or (rhel == 7) and "z196" or "z10")
+                print(env)
+              end}
+        replace: |
+              %global rustc_target_cpus %{lua: do
+                local fedora = tonumber(rpm.expand("0%{?fedora}"))
+                local rhel = tonumber(rpm.expand("0%{?rhel}"))
+                local env =
+                  " RUSTC_TARGET_CPU_X86_64=x86-64" .. ((rhel >= 10) and "-v3" or (rhel == 9) and "-v2" or "")
+                  .. " RUSTC_TARGET_CPU_PPC64LE=" .. ((rhel >= 9) and "pwr9" or "pwr8")
+                  .. " RUSTC_TARGET_CPU_S390X=" ..
+                      ((rhel >= 9) and "z14" or (rhel == 8 or fedora >= 38) and "z13" or
+                       (fedora >= 26) and "zEC12" or (rhel == 7) and "z196" or "z10")
+                print(env)
+              end}
+
+              %ifarch x86_64_v2
+              %global rustc_target_cpus %{lua: do
+                local fedora = tonumber(rpm.expand("0%{?fedora}"))
+                local rhel = tonumber(rpm.expand("0%{?rhel}"))
+                local env =
+                  " RUSTC_TARGET_CPU_X86_64=x86-64-v2"
+                  .. " RUSTC_TARGET_CPU_PPC64LE=" .. ((rhel >= 9) and "pwr9" or "pwr8")
+                  .. " RUSTC_TARGET_CPU_S390X=" ..
+                      ((rhel >= 9) and "z14" or (rhel == 8 or fedora >= 38) and "z13" or
+                       (fedora >= 26) and "zEC12" or (rhel == 7) and "z196" or "z10")
+                print(env)
+              end}
+              %endif
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "AlmaLinux change: Use the correct architecture in x86_64_v2"

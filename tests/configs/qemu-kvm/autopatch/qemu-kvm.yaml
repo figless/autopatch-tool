@@ -1,0 +1,191 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%global have_safe_stack 0"
+        replace: |
+              %global have_safe_stack 0
+              
+              %global have_spice    0
+              %if 0%{?almalinux}
+              %global have_spice    1
+              %ifnarch x86_64 aarch64
+              %global have_spice    0
+              %endif
+              %endif
+
+        count: 1
+      - target: "spec"
+        find: |
+              %global tools_only 0
+              %ifarch %{power64}
+                  %global tools_only 1
+              %endif
+        replace: |
+              %global tools_only 0
+              %if 0%{?almalinux} < 10
+              %ifarch %{power64}
+                  %global tools_only 1
+              %endif
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              %global requires_all_modules                                     \
+              %if %{have_opengl}                                               \
+        replace: |
+              %global requires_all_modules                                     \
+              %if %{have_spice}                                                \
+              Requires: %{name}-ui-spice = %{epoch}:%{version}-%{release}      \
+              %endif                                                           \
+              %if %{have_opengl}                                               \
+        count: 1
+      - target: "spec"
+        find: |
+              %global obsoletes_some_modules                                  \
+              Obsoletes: %{name}-ui-spice <= %{epoch}:%{version}                       \
+        replace: |
+              %global obsoletes_some_modules                                  \
+              %if !%{have_spice}                                                \
+              Obsoletes: %{name}-ui-spice <= %{epoch}:%{version}                       \
+              %endif                                                            \
+        count: 1
+      - target: "spec"
+        find: "BuildRequires: capstone-devel"
+        replace: |
+              BuildRequires: capstone-devel
+              
+              %if %{have_spice}
+              BuildRequires: spice-server-devel
+              BuildRequires: libcacard-devel
+              BuildRequires: nss-devel
+              %endif
+
+        count: 1
+      - target: "spec"
+        find: |
+              %description audio-pa
+              This package provides the additional PulseAudio audio driver for QEMU.
+        replace: |
+              %description audio-pa
+              This package provides the additional PulseAudio audio driver for QEMU.
+              
+              %if %{have_spice}
+              %package  ui-spice
+              Summary: QEMU spice support
+              Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+              %if %{have_opengl}
+              Requires: %{name}-ui-opengl%{?_isa} = %{epoch}:%{version}-%{release}
+              %endif
+              
+              %description ui-spice
+              This package provides spice support.
+              %endif
+
+        count: 1
+      - target: "spec"
+        find: |
+              %ifarch aarch64 s390x x86_64
+                      --with-devices-%{kvm_target}=%{kvm_target}-rh-devices \
+              %endif
+        replace: |
+              %ifarch aarch64 s390x x86_64
+                      --with-devices-%{kvm_target}=%{kvm_target}-rh-devices \
+              %endif
+              %ifarch %{power64}
+              %if 0%{?almalinux}
+                      --with-devices-%{kvm_target}=%{kvm_target}-rh-devices \
+              %endif
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              %endif
+                --enable-seccomp \
+                --enable-selinux \
+                --enable-slirp \
+                --enable-snappy \
+        replace: |
+              %endif
+                --enable-seccomp \
+                --enable-selinux \
+                --enable-slirp \
+                --enable-snappy \
+              %if 0%{have_spice}
+                --enable-smartcard \
+                --enable-spice \
+              %endif
+        count: 1
+      - target: "spec"
+        find: |
+              # Provided by package SLOF
+              rm -rf %{buildroot}%{_datadir}/%{name}/slof.bin
+        replace: |
+              # Provided by package SLOF
+              %ifnarch ppc64le
+              rm -rf %{buildroot}%{_datadir}/%{name}/slof.bin
+              %endif
+        count: 1
+      - target: "spec"
+        find: "rm -rf %{buildroot}%{_datadir}/%{name}/npcm7xx_bootrom.bin"
+        replace: |
+              rm -rf %{buildroot}%{_datadir}/%{name}/npcm7xx_bootrom.bin
+              
+              rm -rf %{buildroot}%{_libdir}/%{name}/ui-spice-app.so
+
+        count: 1
+      - target: "spec"
+        find: |
+              %ifarch x86_64
+                  %{_libdir}/%{name}/accel-tcg-%{kvm_target}.so
+              %endif
+        replace: |
+              %ifarch x86_64
+                  %{_libdir}/%{name}/accel-tcg-%{kvm_target}.so
+              %endif
+              
+              %ifarch ppc64le
+                  %{_datadir}/%{name}/slof.bin
+              %endif
+
+        count: 1
+      - target: "spec"
+        find: |
+              %files audio-pa
+              %{_libdir}/%{name}/audio-pa.so
+        replace: |
+              %files audio-pa
+              %{_libdir}/%{name}/audio-pa.so
+              
+              %if 0%{have_spice}
+              %files ui-spice
+                  %{_libdir}/%{name}/hw-usb-smartcard.so
+                  %{_libdir}/%{name}/audio-spice.so
+                  %{_libdir}/%{name}/ui-spice-core.so
+                  %{_libdir}/%{name}/chardev-spice.so
+              %ifarch x86_64
+                  %{_libdir}/%{name}/hw-display-qxl.so
+              %endif
+              %endif
+            
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Enable QXL device build"
+          - "Enable building for ppc64le"
+          - "Re-added Spice support"
+          - "Don't remove slof.bin for ppc64le"
+
+  - add_files:
+      - type: "patch"
+        name: "2001-Add-ppc64-support.patch"
+        number: 2001
+      - type: "patch"
+        name: "2002-Enable-QXL-device-build.patch"
+        number: 2002

@@ -1,0 +1,21 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%autosetup -n %{srcname}-%{version}"
+        replace: "%autosetup -n %{srcname}-%{version} -p1"
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Add AlmaLinux OS change identifier"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Added-AlmaLinux-change-identifier-0.6.5.patch"
+        number: 1001

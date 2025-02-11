@@ -1,0 +1,16 @@
+actions:
+  - replace:
+      - target: "dist.sh"
+        find: "    egrep -q \"(Enterprise|Advanced)\" $RELEASEFILE && echo $DISTNUM"
+        replace: "    egrep -q \"(Enterprise|Advanced|AlmaLinux)\" $RELEASEFILE && echo $DISTNUM"
+        count: 1
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Fix AlmaLinux detection"

@@ -531,7 +531,7 @@ def test_delete_files_action():
                     name: "file.tar.gz"
                     number: 1
             """,
-            {"add_files": [{"type": "source", "name": "file.tar.gz", "number": 1, "target": "spec"}]},
+            {"add_files": [{"type": "source", "name": "file.tar.gz", "number": 1, "target": "spec", "modify_spec": True}]},
             None
         ),
         ("""
@@ -540,8 +540,9 @@ def test_delete_files_action():
                   - type: "patch"
                     name: "file.tar.gz"
                     number: "Latest"
+                    "modify_spec": False
             """,
-            {"add_files": [{"type": "patch", "name": "file.tar.gz", "number": "Latest", "target": "spec"}]},
+            {"add_files": [{"type": "patch", "name": "file.tar.gz", "number": "Latest", "target": "spec", "modify_spec": False}]},
             None
         ),
         ("""

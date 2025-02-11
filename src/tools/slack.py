@@ -3,7 +3,6 @@ import yaml
 from slack_sdk.web import WebClient
 
 
-
 CHAT_NAME = 'almalinux-debranding'
 
 def get_slack_token(

@@ -1,0 +1,32 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+    - name: "Eduard Abdullin"
+      email: "eabdullin@almalinux.org"
+      line:
+        - "Use static syslinux64.exe to avoid a difference in the checksum in x86_64_v2 arch"
+
+  - replace:
+    - target: "spec"
+      find: |
+            rm -f %{buildroot}%{_prefix}/lib/libsyslinux*
+            rm -f %{buildroot}%{_includedir}/syslinux.h
+      replace: |
+            rm -f %{buildroot}%{_prefix}/lib/libsyslinux*
+            rm -f %{buildroot}%{_includedir}/syslinux.h
+            rm -f %{buildroot}%{_datadir}/syslinux/syslinux64.exe
+            mv %{SOURCE1000} %{buildroot}%{_datadir}/syslinux/syslinux64.exe
+      count: 1
+
+  - run_script:
+    - script: "build-syslinux-exe.sh"
+      cwd: 'autopatch'
+  
+  - add_files:
+    - type: "source"
+      name: "syslinux64.exe"
+      number: 1000

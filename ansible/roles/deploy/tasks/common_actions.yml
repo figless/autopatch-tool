@@ -1,0 +1,39 @@
+---
+- name: Update almalinux-release
+  dnf:
+    name: almalinux-release
+    state: latest
+
+- name: Install EPEL repository
+  dnf:
+    name: epel-release
+    state: latest
+
+- name: Install DNF packages
+  dnf:
+    name: "{{ deploy_dnf_packages }}"
+    state: latest
+
+- name: Install Python requirements using pip
+  pip:
+    name: "{{ deploy_python_packages }}"
+    executable: /usr/bin/pip3.9
+
+- name: Remove unwanted Python packages
+  pip:
+    name:
+      - google-api-core
+      - google-api
+    state: absent
+    executable: /usr/bin/pip3.9
+  
+- name: Skip SSH fingerprint check
+  lineinfile:
+    path: "{{ deploy_home_directory }}/.ssh/config"
+    line: "StrictHostKeyChecking=no"
+    insertbefore: BOF
+    state: present
+    create: yes
+    owner: "root"
+    group: "root"
+    mode: '0600'

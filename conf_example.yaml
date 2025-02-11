@@ -1,19 +1,18 @@
-# actions - объединённая секция для всех действий, связанных с файлами, включая spec-файл
+# actions - a unified section for all actions related to files, including the spec file
 actions:
-  # replace - действия по замене строк. Указываем target (путь к файлу или "spec" для spec-файла).
+  # replace - actions for replacing strings. Specify target (path to the file or "spec" for the spec file).
   - replace:
-      - target: "spec"  # таргетом может быть "spec" либо файл, к которому применяются изменения (в таком случае файл будет искаться).
-      # в качестве таргета может быть spec или файл в репозитории
-        find: "RHEL" # строка, которую нужно заменить
-        replace: "MyCustomLinux" # строка, на которую нужно заменить
-        count: 1  # количество замен, по умолчанию -1 (все вхождения)
+      - target: "spec"  # the target can be "spec" or a file to which changes are applied (in this case, the file will be searched for). glob patterns are supported.
+        find: "RHEL" # string to be replaced
+        replace: "AlmaLinux" # string to replace with
+        count: 1  # number of replacements, default is -1 (all occurrences)
       - target: "README.md"
         find: "RHEL"
-        replace: "MyCustomLinux"
-        
-  # delete_line - список строк для удаления. 
+        replace: "AlmaLinux"
+
+  # delete_line - list of lines to delete. 
   - delete_line:
-      - target: "spec" # таргетом может быть "spec" либо файл, к которому применяются изменения (в таком случае файл будет искаться).
+      - target: "spec" # the target can be "spec" or a file to which changes are applied (in this case, the file will be searched for).
         lines:
           - "line1"
           - "line2"
@@ -24,62 +23,35 @@ actions:
         lines:
           - "line1"
 
-  # modify_release - изменение релиза с добавлением суффикса, включен по умолчанию.
+  # modify_release - modify the release by adding a suffix, enabled by default.
   - modify_release:
-    - suffix: ".mycustom.1" # можно не указывать если enabled: false
-      enabled: true # если не указано, то по умолчанию enabled: true
+    - suffix: ".alma.1" # append the suffix to the release
+      enabled: true # (is "true" by default)
 
-  # changelog_entry - добавление записей в чейнджлог для spec-файла.
+  # changelog_entry - adding entries to the changelog for the spec file.
   - changelog_entry:
-      # Может быть несколько записей. В случае если есть autochangelog не должно добавляться, так же "line" используется в качестве коммит месседжа.
-      - name: "eabdullin" # имя автора
-        email: "eabdullin@almalinux.org" # email автора
-        line: # строки для добавления в changelog
-          - "Updated branding to MyCustomLinux"
+      # There can be multiple entries. If autochangelog is present, entries should not be added. The "line" is also used as the commit message.
+      - name: "eabdullin" # author's name
+        email: "eabdullin@almalinux.org" # author's email
+        line: # lines to add to the changelog
+          - "Updated branding to AlmaLinux"
           - "Additional update for branding"
 
-  # add_files - добавление файлов (исходные файлы и патчи).
+  # add_files - adding files (source files and patches).
   - add_files:
-      - type: "patch" # тип файла (patch или source, возможно в будущем добавление других типов)
-        name: "my_patch.patch" # имя патча
-        number: "Latest" # number - либо номер патча, либо "Latest" для вычисления патча автоматически. (по дефолту "Latest")
+      - type: "patch" # file type (patch or source, other types may be added in the future)
+        name: "my_patch.patch" # patch name
+        number: "Latest" # number - either the patch number or "Latest" for automatic patch detection (default is "Latest")
       - type: "source"
-        name: "my_new_source.tar.gz" # имя исходного файла
-        number: "Latest" # number - либо номер сорса, либо "Latest" для вычисления сорса автоматически. (по дефолту "Latest")
+        name: "my_new_source.tar.gz" # source file name
+        number: "Latest" # number - either the source number or "Latest" for automatic source detection (default is "Latest")
 
-  # delete_files - список файлов, которые нужно удалить.
+  # delete_files - list of files to delete.
   - delete_files:
-      - file_name: "file1.txt" # имя файла для удаления, будет искаться в репозитории пакета 
+      - file_name: "file1.txt" # file name to delete, will be searched for in the package repository
       - file_name: "file2.txt"
 
-  # run_script - список скриптов для выполнения в репозитории rpm пакета.
+  # run_script - list of scripts to execute in the RPM package repository.
   - run_script:
-      - script: "custom_script.sh" # имя скрипта для выполнения, скрипт должен лежать в scripts директории
-
-
-# не нужно в первой версии тулзы
-  # dependencies - список зависимостей, которые необходимо добавить (можно добавить в сабпакеты, указав subpackage).
-  - dependencies:
-      main:
-        - name: "new-dependency1" # имя зависимости
-          buildrequires: true # true - зависимость добавляется в BuildRequires, false - Requires
-        - name: "new-dependency2"
-          buildrequires: false
-      subpackage1: # добавление зависимостей в сабпакеты(имя сабпакета должно совпадать с именем сабпакета в spec-файле)
-        - name: "subpackage-dependency1"
-          buildrequires: true
-        - name: "subpackage-dependency2"
-          buildrequires: false
-      subpackage2: # добавление зависимостей в сабпакеты
-        - name: "subpackage-dependency3"
-          buildrequires: true
-        - name: "subpackage-dependency4"
-          buildrequires: false
-  
-  # apply_patch - список патчей для применения в репозитории rpm пакета.
-  # Патч будет выполняться в директории с пакетом. Скрипт выполняется вторым в списке действий.
-  - apply_patch:
-      - "my_patch.diff" # имя патча
-
-  # run_custom_scripts - список скриптов для выполнения в репозитории rpm пакета.
-  # скрипт будет выполняться в директории с пакетом. Скрипт выполняется самым первым в списке действий.
+      - script: "custom_script.sh" # name of the script to execute, the script must be in the scripts directory
+        cwd: '"rpms" or "autopatch"' # directory where the script will be executed, "rpms" (the directory with package sources) by default, or "autopatch" (the directory with the auto-patching configuration)

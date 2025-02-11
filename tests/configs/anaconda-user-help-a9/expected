@@ -22,6 +22,8 @@ This package provides content for the Anaconda built-in help system.
 
 %prep
 %setup -q
+
+# Applying AlmaLinux Patch
 %patch -P 1 -p1 -b .anaconda-user-help-almalinux-branding
 
 %install

@@ -1,0 +1,16 @@
+actions:
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Andrei Lukoshko"
+        email: "alukoshko@almalinux.org"
+        line:
+          - "Fix FTBFS with NSS v3.58+ caused by conflicting struct names"
+
+  - add_files:
+      - type: "patch"
+        name: "0001-Rename-DSA-RSA-PublicKey-to-Py-DSA-RSA-PublicKey.patch"
+        number: 2

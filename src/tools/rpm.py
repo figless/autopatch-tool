@@ -12,6 +12,7 @@ rpmspec_definition = {
     "ldconfig_scriptlets(n:)": "%{nil}",
     "forgemeta": "%{nil}",
     "gometa": "%{nil}",
+    "efi_has_alt_arch": "0",
 }
 
 class PatchDirectiveType(Enum):
@@ -43,7 +44,7 @@ def spec_contains_autochangelog(spec_info: list[str]) -> bool:
 
 def spec_contains_autosetup(spec_info: list[str]) -> bool:
     for line in spec_info:
-        if "%autosetup" in line or "%forgeautosetup" in line:
+        if "%autosetup" in line or "%forgeautosetup" in line or "%autopatch" in line:
             return True
     return False
 
@@ -76,11 +77,12 @@ def prepare_spec_file_data_with_rpmspec(spec_info: list[str], spec_file_path) ->
             tmp_file_path = tmp_file.name
         result = run_command(["rpmspec", "--parse", tmp_file_path, *definitions])
         os.remove(tmp_file_path)
-        
+
         return list(map(lambda s: f"{s}\n", result.stdout.splitlines()))
 
     except Exception as err:
         raise RPMSpecFileParsingError("Failed to parse spec data with rpmspec") from err
+
 
 def get_version_information(spec_info: list[str]) -> tuple[str, ...]:
     """
@@ -195,7 +197,7 @@ def find_last_directive(spec_info: list[str], directive_type: DirectiveType):
             last_endif_index = i - 1
         elif re.match(r"^%if*", line) and in_conditional:
             in_conditional = False
-        
+
         # Track the last directive
         if (result := re.match(rf"{directive_type.value}([0-9]*):", line)):
             if not in_conditional:
@@ -218,14 +220,16 @@ def find_last_directive(spec_info: list[str], directive_type: DirectiveType):
             return find_last_directive(spec_info, DirectiveType.SOURCE)
         else:
             raise RPMSpecFileParsingError(f"No {directive_type} directives found in spec file")
-        
+
     return (last_directive_number, last_directive_index, directives_without_numbers)
+
 
 def find_almalinux_block(spec_info: list[str], directive_type: str):
     for i, line in enumerate(spec_info):
         if re.match(rf"^# AlmaLinux {directive_type}*$", line, re.IGNORECASE):
             return True
     return False
+
 
 def get_patch_directive_type(line: str) -> PatchDirectiveType:
     if re.match(r"^%patch[0-9]{1,5}", line):
@@ -238,6 +242,7 @@ def get_patch_directive_type(line: str) -> PatchDirectiveType:
         return PatchDirectiveType.KERNEL
     return None
 
+
 def generate_patch_apply_line(patch_number: str, patch_stem: str, patch_directive_type: PatchDirectiveType) -> str:
     if patch_directive_type == PatchDirectiveType.CLASSIC:
         return f"""%patch{patch_number} -p1 -b .{patch_stem}"""
@@ -249,6 +254,7 @@ def generate_patch_apply_line(patch_number: str, patch_stem: str, patch_directiv
         return f"""ApplyPatch {patch_stem}.patch"""
     else:
         raise RPMSpecFileParsingError("Unknown patch directive type")
+
 
 def define_type_patch_directive_type(spec_info: list[str], package_name: str, patches_file: bool) -> PatchDirectiveType:
     if patches_file:
@@ -291,6 +297,7 @@ def find_index_to_insert(spec_info: list[str]) -> int:
 
     return insert_index
 
+
 def find_setup_line(spec_info: list[str]) -> int:
     for i, line in enumerate(spec_info):
         if re.match(r"^%setup\b", line):
@@ -304,6 +311,17 @@ def get_ids_of_patches(spec_info: list[str]) -> list[int]:
         if (result := re.match(r"^Patch([0-9]+):", line)):
             patches.append(int(result.group(1)))
     return patches
+
+
+def insert_apply_line(spec_info: list[str], directive_type: DirectiveType, insert_index: int) -> None:
+    almalinux_block_exists = False
+    
+    for i, line in enumerate(spec_info):
+        if re.match(rf"^# Applying AlmaLinux {directive_type.value}*$", line, re.IGNORECASE):
+            almalinux_block_exists = True
+    if not almalinux_block_exists:
+        print(f"\n# Applying AlmaLinux {directive_type.value}")
+        spec_info.insert(insert_index, f"\n# Applying AlmaLinux {directive_type.value}")
 
 
 def apply_patch(
@@ -337,20 +355,15 @@ def apply_patch(
     spec_info.insert(last_patch_index, f"{directive_type.value}{new_patch_number}: {patch_name}")
 
     patch_directive_type = define_type_patch_directive_type(spec_info, package_name, patches_file)
-    
+
     # Doesn't need to apply patch directive for autosetup package and for packes with patches file
     if directive_type == DirectiveType.PATCH and patch_directive_type != PatchDirectiveType.PATCHES_FILE:
-        almalinux_block_exists = False
         insert_index = find_index_to_insert(spec_info)
         logger.debug(f"Patch directive type: {patch_directive_type} and insert index: {insert_index}")
 
         if insert_index is not None:
             if patch_directive_type != PatchDirectiveType.AUTOSETUP and patch_directive_type != PatchDirectiveType.PATCHES_FILE:
-                for i, line in enumerate(spec_info):
-                    if re.match(rf"^# Applying AlmaLinux {directive_type.value}*$", line, re.IGNORECASE):
-                        almalinux_block_exists = True
-                if not almalinux_block_exists:
-                    spec_info.insert(insert_index, f"\n# Applying AlmaLinux {directive_type.value}")
+                insert_apply_line(spec_info, directive_type, insert_index)
 
                 spec_info.insert(
                     insert_index,
@@ -365,6 +378,8 @@ def apply_patch(
                 insert_index = find_setup_line(spec_info)
                 logger.debug(f"Insert index: {insert_index}")
                 if insert_index is not None:
+                    insert_apply_line(spec_info, directive_type, insert_index)
+
                     patch_directive_type = PatchDirectiveType.UPPER_P_W_SPACE
                     spec_info.insert(
                         insert_index, 

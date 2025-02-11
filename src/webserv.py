@@ -9,12 +9,16 @@ from werkzeug.exceptions import (
 )
 
 from tools.logger import logger
-from debranding import apply_modifications
+from debranding import (
+    apply_modifications,
+    SUCCESS
+)
 from tools.webserv_tools import (
     auth_key_required,
     jsonify_response,
     get_name_from_payload,
     get_branch_from_payload,
+    get_tag_from_payload,
 )
 import tools.slack
 
@@ -31,17 +35,19 @@ HTTP_400_BAD_REQUEST = 400
 def debrand_packages():
     try:
         logger.debug(json.dumps(request.json, indent=4))
-        if 'commits' not in request.json:
-            return jsonify_response(
-                result={
-                    'message': 'Nothing to sync, because commits are absent',
-                },
-                status_code=HTTP_200_OK,
-                success=True,
-            )
 
         repo_name = get_name_from_payload(request.json)
         branch = get_branch_from_payload(request.json)
+
+        if branch.startswith('a'):
+            return jsonify_response(
+                result={
+                    'message': f'Nothing to sync, because it is modified branch',
+                    'details': f'branch - {branch}'
+                },
+                status_code=HTTP_200_OK,
+                success=False,
+            )
 
         if not repo_name or not branch:
             return jsonify_response(
@@ -49,17 +55,21 @@ def debrand_packages():
                     'message': f'Nothing to sync, because repository name or branch are absent in payload',
                     'details': f'repo name - {repo_name}, branch - {branch}'
                 },
-                status_code=HTTP_400_BAD_REQUEST,
+                status_code=HTTP_200_OK,
                 success=False,
             )
 
-        message = apply_modifications(repo_name, branch)
-        logger.info(message)
-        tools.slack.success_message(repo_name, branch)
+        result = apply_modifications(
+            repo_name,
+            branch,
+            get_tag_from_payload(request.json).replace("imports/c", "changed/a", 1),
+        )
+        if result == SUCCESS:
+            tools.slack.success_message(repo_name, branch)
 
         return jsonify_response(
             result={
-                'message': message,
+                'message': result,
             },
             status_code=HTTP_200_OK,
         )

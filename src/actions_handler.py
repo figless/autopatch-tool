@@ -151,9 +151,17 @@ class BaseEntry:
         return f"{self.__class__.__name__}({attributes})"
 
     def get_file_name(self, package_path: Path, file_name: str, first: bool = True):
-        files = list(
-            f for f in Path(package_path).rglob(file_name) if "tests" != f.parts[-2]
-        )
+        files = list()
+
+        for f in Path(package_path).rglob(file_name):
+            try:
+                index = f.parts.index(package_path.name)
+                if len(f.parts) > index + 1 and f.parts[index + 1] == "tests":
+                    continue
+            except ValueError:
+                pass
+            
+            files.append(f)
 
         if not files:
             raise FileNotFoundError(f"File '{file_name}' not found in '{package_path}'")
@@ -316,12 +324,20 @@ class ModifyReleaseAction(BaseAction):
 class RunScriptEntry(BaseEntry):
     ALLOWED_KEYS = {
         "script": str,
+        "cwd": str
     }
     REQUIRED_KEYS = {"script"}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.cwd = kwargs.get("cwd", "rpms")
         self.target = ""
+        self.verify_cwd()
+    
+    def verify_cwd(self):
+        if self.cwd in ["rpms", "autopatch"]:
+            return
+        raise ValueError(f"Invalid value for 'cwd'. Must be 'rpms' or 'autopatch'")
 
 class RunScriptAction(BaseAction):
     ENTRY_CLASS = RunScriptEntry
@@ -331,11 +347,14 @@ class RunScriptAction(BaseAction):
             logger.info(f"Running script: {entry}")
 
             script_file = (self.config_source.parent / "scripts") / entry.script
+
+            entry.cwd = package_path if entry.cwd == "rpms" else self.config_source.parent
+
             if not script_file.exists():
                 raise FileNotFoundError(f"Script file '{script_file}' does not exist")
             
-            run_command(["bash", str(script_file)], cwd=package_path, raise_on_failure=True)
-            
+            run_command(["bash", str(script_file)], cwd=entry.cwd, raise_on_failure=True)
+
 
 class ChangelogEntry(BaseEntry):
     ALLOWED_KEYS = {
@@ -395,6 +414,7 @@ class AddFilesEntry(BaseEntry):
         "type": str,
         "name": str,
         "number": (str, int),
+        "modify_spec": bool,
     }
     REQUIRED_KEYS = {"type", "name", "number"}
     VALID_FILE_TYPES = {"patch", "source"}
@@ -402,6 +422,7 @@ class AddFilesEntry(BaseEntry):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.modify_spec = kwargs.get("modify_spec", True)
         self._validate_file_type()
         self._validate_number()
         self.target = "spec"
@@ -451,14 +472,15 @@ class AddFilesAction(BaseAction):
 
             logger.info(f"Adding file: {entry}")
 
-            tools.rpm.apply_patch(
-                spec,
-                entry.name,
-                directive_type,
-                package_name,
-                is_patches_file,
-                entry.number if entry.number != "Latest" else -1
-            )
+            if entry.modify_spec:
+                tools.rpm.apply_patch(
+                    spec,
+                    entry.name,
+                    directive_type,
+                    package_name,
+                    is_patches_file,
+                    entry.number if entry.number != "Latest" else -1
+                )
             self.copy_file_to_package(package_path, entry.name)
 
             write_file_data(spec_file_path, spec)
@@ -547,3 +569,22 @@ class ConfigReader:
     def apply_actions(self, package_path: Path):
         for action in self.actions:
             action.execute(Path(package_path))
+    
+    def get_changelog(self):
+        """
+        Returns a list of chagelog entries, email and name of latest entry
+        (list, str, str)
+        """
+        changelog = []
+        name = ""
+        email = ""
+
+        for action in self.actions:
+            if not isinstance(action, ChangelogAction):
+                continue
+            for action_entry in action.entries:
+                if not name:
+                    name = action_entry.name
+                    email = action_entry.email
+                changelog.extend(action_entry.line)
+        return changelog, name, email

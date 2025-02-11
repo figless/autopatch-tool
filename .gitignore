@@ -8,3 +8,4 @@ test_spec.spec*
 main.py
 tests/results/
 main_git.py
+*namespace

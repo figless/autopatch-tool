@@ -72,8 +72,10 @@ def compare_file(file1, file2, diff_output_dir):
 def compare_files(sources_dir, result_case_dir, diff_output_dir):
     for root, _, files in os.walk(sources_dir):
         for file in files:
-            if file not in ["expected", "autopatch", f"{sources_dir.name}.yaml"] and not file.endswith(".expected") and not file.endswith(".spec"):
-                src_file = Path(root) / file
+            if 'scripts' in root:
+                continue
+            if (file not in ["expected", "autopatch", "scripts", f"{sources_dir.name}.yaml"] and not file.endswith(".spec") )and file.endswith(".expected"):
+                src_file = Path(root) / file.replace(".expected", "")
                 rel_path = src_file.relative_to(sources_dir)
                 dest_file = result_case_dir / rel_path
                 expected_file = src_file.with_suffix(src_file.suffix + ".expected")
@@ -84,10 +86,12 @@ def process_actions(config, yaml_file, result_case_dir, case_name):
     for action in config.actions:
         if isinstance(action, AddFilesAction):
             for entry in action.entries:
-                file_to_create = yaml_file.parent / "files" / entry.name
-                files_to_delete.append(file_to_create)
-                files_to_delete.append(result_case_dir / entry.name)
-                create_file(file_to_create)
+                # For syslinux test, file should be created by script
+                if entry.name != "syslinux64.exe":
+                    file_to_create = yaml_file.parent / "files" / entry.name
+                    files_to_delete.append(file_to_create)
+                    files_to_delete.append(result_case_dir / entry.name)
+                    create_file(file_to_create)
         elif isinstance(action, DeleteFilesAction):
             for entry in action.entries:
                 file_to_create = result_case_dir / entry.file_name

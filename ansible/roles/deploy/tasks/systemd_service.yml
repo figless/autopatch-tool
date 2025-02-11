@@ -1,0 +1,24 @@
+---
+
+- name: Create systemd service
+  ansible.builtin.template:
+    src: "{{ item.key }}.j2"
+    dest: "{{ deploy_systemd_dir }}/{{ item.key }}"
+    owner: root
+    group: root
+    mode: 0640
+    force: yes
+  loop: "{{ deploy_systemd_services | dict2items }}"
+
+- name: Enable systemd service
+  systemd:
+    name: "{{ item.key }}"
+    state: "{{ item.value }}"
+    enabled: yes
+    masked: no
+    daemon_reload: yes
+  when: item.value
+  loop: "{{ deploy_systemd_services | dict2items }}"
+  tags:
+    - update_credentials
+    - deploy_files

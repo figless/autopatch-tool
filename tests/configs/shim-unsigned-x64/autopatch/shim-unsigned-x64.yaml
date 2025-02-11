@@ -1,0 +1,74 @@
+actions:
+  - replace:
+      - target: "spec"
+        find: "%global efidir %(eval echo $(grep ^ID= /etc/os-release | sed -e 's/^ID=//' -e 's/rhel/redhat/'))"
+        replace: "%global efidir almalinux"
+        count: 1
+      - target: "spec"
+        find: "BuildRequires:	dos2unix findutils"
+        replace: |
+              BuildRequires:	dos2unix findutils
+              BuildRequires:	efitools
+        count: 1
+      - target: "spec"
+        find: "%build"
+        replace: |
+              %build
+              # Prepare vendor_db.esl file
+              openssl x509 -inform DER -in %{SOURCE101} -out 01.pem
+              openssl x509 -inform DER -in %{SOURCE102} -out 02.pem
+              openssl x509 -inform DER -in %{SOURCE103} -out 03.pem
+              cert-to-efi-sig-list -g 9DD8A2AC-0977-4AEF-99A0-E794FD2A31FE 01.pem 01.esl
+              cert-to-efi-sig-list -g 33D81FE3-5EC0-44F8-AB02-C9DA554F63D8 02.pem 02.esl
+              cert-to-efi-sig-list -g 50413300-1AC7-49DA-B755-BB0D93E634B6 03.pem 03.esl
+              cat 01.esl 02.esl 03.esl > vendor_db.esl
+        count: 1
+      - target: "spec"
+        find: |
+              if [ -s "%{SOURCE1}" ]; then
+              	MAKEFLAGS="$MAKEFLAGS VENDOR_CERT_FILE=%{SOURCE1} "
+              fi
+        replace: |
+              if [ -s vendor_db.esl ]; then
+              	MAKEFLAGS="$MAKEFLAGS VENDOR_DB_FILE=../vendor_db.esl"
+              fi
+        count: 2
+
+  - modify_release:
+    - suffix: ".alma.1"
+      enabled: true
+
+  - delete_line:
+      - target: "spec"
+        lines:
+          - "Source1:	redhatsecurebootca5.cer"
+          - "Source3:	sbat.redhat.csv"
+      - target: ".shim-unsigned-x64.metadata"
+        lines:
+          - "e6f506462069aa17d2e8610503635c20f3a995c3 SOURCES/redhatsecurebootca5.cer"
+      - target: ".gitignore"
+        lines:
+          - "SOURCES/redhatsecurebootca5.cer"
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Use AlmaLinux OS cert and SBAT entry"
+
+  - add_files:
+      - type: "source"
+        name: "sbat.almalinux.csv"
+        number: 3
+      - type: "source"
+        name: "almalinux-sb-cert-1.der"
+        number: 101
+      - type: "source"
+        name: "almalinux-sb-cert-2.der"
+        number: 102
+      - type: "source"
+        name: "almalinux-sb-cert-3.der"
+        number: 103
+
+  - delete_files:
+      - file_name: "sbat.redhat.csv"

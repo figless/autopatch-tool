@@ -1,0 +1,17 @@
+[Unit]
+Description=AlmaLinux Autopathing Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment="HOME={{ deploy_home_directory }}"
+Environment="AUTH_KEY={{ deploy_auth_key }}"
+Type=simple
+WorkingDirectory={{ deploy_source_path }}/src
+ExecStart=/usr/local/bin/gunicorn -w 2 --timeout 240 -b "0.0.0.0:{{ deploy_gunicorn_port }}" webserv:app
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

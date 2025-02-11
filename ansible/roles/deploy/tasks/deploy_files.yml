@@ -1,0 +1,8 @@
+- name: Send files
+  synchronize:
+    src: "{{ item }}"
+    dest: "{{ deploy_source_path }}"
+  with_items:
+    - "../../src"
+    - "../../package_patching.py"
+    - "../../validate_config.py"

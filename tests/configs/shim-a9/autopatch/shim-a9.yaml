@@ -1,0 +1,98 @@
+actions:
+  - replace:
+      - target: ".shim.metadata"
+        find: |
+              9ca9cfa834aedfaf3efe2216bfa1cb7c286ee1c0 SOURCES/fbx64.efi
+              5eb0ac78eee6aeeaf44a3f11d002b4fe00af6916 SOURCES/mmx64.efi
+              4312f246b6ba692040383f10358ac9a5927207de SOURCES/shimaa64.efi
+              783fb77783e9d0c4c400b723dfd0f02f006616ae SOURCES/shimx64.efi
+        replace: |
+              4591a3da03f337b27e963b69202f7109496c0ef8 SOURCES/fbaa64.efi
+              403a4e918a00f5e90551085c7ba545969feee26e SOURCES/fbx64.efi
+              48fe2246bcc52729315e7db8361d753ab6be1633 SOURCES/mmaa64.efi
+              08fa765dbe8902c022fe0d5b5803c14bc1e44a5c SOURCES/mmx64.efi
+              206b13df7ccae83bf2f961da7010e16eac372b28 SOURCES/shimaa64.efi
+              1208043ca28f8566c115d8a15ba9bd8163b6badb SOURCES/shimx64.efi
+        count: 1
+      - target: "shim.rpmmacros"
+        find: |
+              %global shimveraa64 15.8-2.el9
+              %global shimverx64 15.8-2.el9
+        replace: |
+              %global shimveraa64 15.8-2.el9.alma.1
+              %global shimverx64 15.8-2.el9.alma.1
+        count: 1
+      - target: "shim.rpmmacros"
+        find: "Requires: dbxtool >= 0.6-3						\\"
+        replace: |
+              Requires: dbxtool >= 0.6-3						\
+              %{expand:%ifarch x86_64						\
+              # SecureBoot keys dependencies						\
+              Requires: almalinux(grub2-sig-key) >= 202303				\
+              Requires: almalinux(kernel-sig-key) >= 202303				\
+              %endif}                                                         \
+        count: 1
+      - target: "shim.rpmmacros"
+        find: |
+              %ifarch aarch64
+              %global is_signed no
+        replace: |
+              %ifarch aarch64
+              %global is_signed yes
+        count: 1
+      - target: "spec"
+        find: "Name:		shim"
+        replace: |
+              %global efi_vendor almalinux
+              %global efidir almalinux
+              %global efi_esp_dir /boot/efi/EFI/%{efidir}
+              
+              Name:		shim
+        count: 1
+      - target: ".gitignore"
+        find: |
+            SOURCES/fbx64.efi
+            SOURCES/mmx64.efi
+        replace: |
+            SOURCES/fbaa64.efi
+            SOURCES/fbx64.efi
+            SOURCES/mmaa64.efi
+            SOURCES/mmx64.efi
+        count: 1
+        
+  - delete_line:
+      - target: "spec"
+        lines:
+          - |
+            Source1:	redhatsecureboot501.cer
+            Source2:	redhatsecurebootca5.cer
+
+  - modify_release:
+    - suffix: ".alma.2"
+      enabled: true
+
+  - changelog_entry:
+      - name: "Eduard Abdullin"
+        email: "eabdullin@almalinux.org"
+        line:
+          - "Add SB for aarch64"
+          - "Use AlmaLinux cert"
+
+  - delete_files:
+      - file_name: "BOOTAA64.CSV"
+      - file_name: "BOOTX64.CSV"
+      - file_name: "fbaa64.efi"
+      - file_name: "mmaa64.efi"
+
+  - add_files:
+      - type: "source"
+        name: "almalinuxsecurebootca0.cer"
+        number: 1
+      - type: "source"
+        name: "BOOTAA64.CSV"
+        number: "Latest"
+        modify_spec: False
+      - type: "source"
+        name: "BOOTX64.CSV"
+        number: "Latest"
+        modify_spec: False

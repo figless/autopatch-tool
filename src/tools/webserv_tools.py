@@ -57,5 +57,12 @@ def get_branch_from_payload(
     payload: Dict[str, Any]
 ) -> str:
     if 'ref' in payload:
-        return payload['ref'].split('/')[-1]
+        return payload['ref'].split('/')[-2]
+    return ''
+
+def get_tag_from_payload(
+    payload: Dict[str, Any]
+) -> str:
+    if 'ref' in payload and 'ref_type' in payload and "tag" == payload['ref_type']:
+        return payload['ref']
     return ''

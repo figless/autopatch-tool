@@ -1,6 +1,5 @@
 from pathlib import Path
 import shutil
-from typing import Optional
 import os
 import requests
 
@@ -41,6 +40,8 @@ class GitRepository:
     def __init__(self, url, clone: bool = True):
         self.url = url
         self.name = self.url.split("/")[-1].replace(".git", "")
+        self.immudb_wrapper = ImmudbWrapper(**load_cas_credentials())
+
         if clone:
             self.__clone()
 
@@ -78,10 +79,13 @@ class GitRepository:
         self.run_in_repo(*command)
         self.push_tags()
 
-    def commit(self, message: str):
+    def commit(self, message: list, name: str, email: str):
         logger.info(f"Committing changes to {self.url}")
+        commit_messages = []
+        for line in message:
+            commit_messages.extend(["-m", line])
         self.run_in_repo("git", "add", ".")
-        self.run_in_repo("git", "commit", "-m", message)
+        self.run_in_repo("git", "commit", "--author", f'"{name} <{email}>"', *commit_messages)
 
     def checkout_branch(self, branch: str):
         logger.info(f"Checking out branch {branch}")
@@ -95,16 +99,35 @@ class GitRepository:
         logger.info(f"Replacing file {file} with {replacing_branch}")
         self.run_in_repo("git", "checkout", replacing_branch, "--", file)
 
-    def notarize_commit(self) -> Optional[str]:
-        immudb_wrapper = ImmudbWrapper(**load_cas_credentials())
-        response = immudb_wrapper.notarize_git_repo(
+    def get_sbom_hash(self) -> str:
+        try:
+            result = self.immudb_wrapper.authenticate_git_repo(self.name)
+            matching_tag_is_authenticated = result.get('verified', False)
+        
+            if not matching_tag_is_authenticated:
+                logger.error(f"Upstream commit is not notarized")
+                raise GitRepositoryError(f"Upstream commit is not notarized")
+            matching_immudb_hash = result.get('value', {}).get('Hash')
+        
+            logger.info(f"Upstream commit is notarized with hash: {matching_immudb_hash}")
+        except Exception as e:
+            logger.error(f"Failed to authenticate git repo: {e}")
+            raise GitRepositoryError(f"Failed to authenticate git repo: {e}")
+        
+        return matching_immudb_hash
+
+    def notarize_commit(self, upstream_hash: str = None) -> str:
+        response = self.immudb_wrapper.notarize_git_repo(
             self.name,
-            user_metadata={'sbom_api_ver': '0.2'},
+            user_metadata={'sbom_api_ver': '0.2', 'upstream_commit_sbom_hash': upstream_hash},
         )
         if response.get('verified') != True:
             logger.error(f"Failed to notarize commit: {response}")
             raise GitRepositoryError("Failed to notarize commit")
-        return response.get('value', {}).get('Hash')
+        hash = response.get('value', {}).get('Hash')
+        logger.info(f"Commit notarization hash: {hash}")
+
+        return hash
     
     def merge_branch(self, branch: str, strategy: str = None, no_commit: bool = False):
         command = ["git", "merge", branch]
@@ -129,7 +152,7 @@ class GitRepository:
                         logger.debug(f"Skipping hidden file: {item}")
                         continue
                     item_path = os.path.join('.', item)
-                    if os.path.isfile(item_path):
+                    if os.path.isfile(item_path) or os.path.islink(item_path):
                         os.remove(item_path)
                         logger.debug(f"Deleted file: {item_path}")
                     elif os.path.isdir(item_path):
@@ -145,11 +168,14 @@ class GitRepository:
         self.merge_branch(base_branch, strategy='theirs', no_commit=True)
         # All files in the target branch should be replaced with the files in the base branch
         self.clean_repodir()
-        self.run_in_repo("ls", "-la")
         self.replace_file(base_branch, '.')
 
         if not no_commit:
             self.commit(f"Merge '{base_branch}' into '{target_branch}'")
+    
+    def get_latest_tag(self):
+        with DirectoryManager(self.name):
+            return run_command(["git", "describe", "--tags"]).stdout.strip()
 
 
 
@@ -158,6 +184,7 @@ class GitAlmaLinux:
     _almalinux_git_url = f'https://{_almalinux_git}'
     _almalinux_git_api = f'https://{_almalinux_git}/api/v1'  # https://git.almalinux.org/api/v1
     _autopatch_namespace = 'autopatch'
+    _rpms_namespace = 'rpms'
 
     @staticmethod
     def _iterate_over_pages(url):

@@ -1,0 +1,176 @@
+# Polyfill %%bcond() macro for platforms without it
+%if 0%{!?bcond:1}
+%define bcond() %[ (%2)\
+    ? "%{expand:%%{!?_without_%{1}:%%global with_%{1} 1}}"\
+    : "%{expand:%%{?_with_%{1}:%%global with_%{1} 1}}"\
+]
+%endif
+
+# The pytest-xdist package is not available when bootstrapping or for EL builds
+%bcond xdist %{undefined rhel}
+
+# Package the placeholder rpm-macros (moved to redhat-rpm-config in F40)
+%if ! (0%{?fedora} >= 40 || 0%{?rhel} >= 10)
+%bcond rpmmacropkg 1
+%else
+%bcond rpmmacropkg 0
+%endif
+
+%if ! 0%{?fedora}%{?rhel} || 0%{?fedora} || 0%{?epel} >= 9
+%bcond poetry 1
+# Appease old Poetry versions (<1.2.0a2)
+%if ! 0%{?fedora}%{?rhel} || 0%{?fedora} >= 38 || 0%{?rhel} >= 10
+%bcond old_poetry 0
+%else
+%bcond old_poetry 1
+%endif
+%else
+%bcond poetry 0
+%endif
+
+%if ! 0%{?fedora}%{?rhel} || 0%{?fedora} || 0%{?epel} >= 9 || 0%{?rhel} >= 10
+%bcond manpage_manual_title 1
+%else
+%bcond manpage_manual_title 0
+%endif
+
+%global srcname rpmautospec
+
+Name: python-%{srcname}
+Version: 0.6.5
+Release: %autorelease
+Summary: Package and CLI tool to generate release fields and changelogs
+License: MIT
+URL: https://github.com/fedora-infra/%{srcname}
+Source0: https://github.com/fedora-infra/%{srcname}/releases/download/%{version}/%{srcname}-%{version}.tar.gz
+
+# AlmaLinux Patch
+Patch1001: 0001-Added-AlmaLinux-change-identifier-0.6.5.patch
+
+%if 0%{!?pyproject_files:1}
+%global pyproject_files %{_builddir}/%{name}-%{version}-%{release}.%{_arch}-pyproject-files
+%endif
+
+BuildArch: noarch
+BuildRequires: argparse-manpage
+BuildRequires: git
+# the langpacks are needed for tests
+BuildRequires: glibc-langpack-de
+BuildRequires: glibc-langpack-en
+BuildRequires: python3-devel >= 3.9.0
+# The dependencies needed for testing don’t get auto-generated.
+BuildRequires: python3dist(pytest)
+%if %{with xdist}
+BuildRequires: python3dist(pytest-xdist)
+%endif
+BuildRequires: python3dist(pyyaml)
+BuildRequires: sed
+
+%if %{without poetry}
+BuildRequires: python3dist(babel)
+BuildRequires: python3dist(pygit2)
+BuildRequires: python3dist(rpm)
+BuildRequires: python3dist(rpmautospec-core)
+BuildRequires: python3dist(setuptools)
+%{?python_provide:%python_provide python3-%{srcname}}
+%endif
+
+%global _description %{expand:
+A package and CLI tool to generate RPM release fields and changelogs.}
+
+%description %_description
+
+%package -n python3-%{srcname}
+Summary: %{summary}
+%{?python_provide:%python_provide python3-%{srcname}}
+
+%description -n python3-%{srcname} %_description
+
+%package -n %{srcname}
+Summary:  CLI tool for generating RPM releases and changelogs
+Requires: python3-%{srcname} = %{version}-%{release}
+
+%description -n %{srcname}
+CLI tool for generating RPM releases and changelogs
+
+%if %{with rpmmacropkg}
+%package -n rpmautospec-rpm-macros
+Summary: Rpmautospec RPM macros for local rpmbuild
+Requires: rpm
+
+%description -n rpmautospec-rpm-macros
+This package contains RPM macros with placeholders for building rpmautospec
+enabled packages locally.
+%endif
+
+%generate_buildrequires
+%if %{with poetry}
+%pyproject_buildrequires
+%endif
+
+%prep
+%autosetup -n %{srcname}-%{version} -p1
+%if %{with old_poetry}
+sed -i \
+    -e 's/\[tool\.poetry\.group\.dev\.dependencies\]/[tool.poetry.dev-dependencies]/g' \
+    pyproject.toml
+%endif
+
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/#_linters
+sed -i -e '/pytest-cov/d; /addopts.*--cov/d' pyproject.toml
+
+%build
+%if %{with poetry}
+%pyproject_wheel
+%else
+%py3_build
+%endif
+
+%install
+%if %{with poetry}
+%pyproject_install
+%pyproject_save_files %{srcname}
+# Work around poetry not listing license files as such in package metadata.
+sed -i -e 's|^\(.*/LICENSE\)|%%license \1|g' %{pyproject_files}
+%else
+%py3_install
+cat << EOF > %{pyproject_files}
+%{python3_sitelib}/%{srcname}/
+%{python3_sitelib}/*.egg-info/
+EOF
+%endif
+
+install -d %{buildroot}%{_mandir}/man1
+PYTHONPATH=%{buildroot}%{python3_sitelib} argparse-manpage \
+%if %{with manpage_manual_title}
+    --manual-title "User Commands" \
+%endif
+    --project-name rpmautospec \
+    --module rpmautospec.cli \
+    --function get_arg_parser > %{buildroot}%{_mandir}/man1/rpmautospec.1
+
+%if %{with rpmmacropkg}
+mkdir -p %{buildroot}%{rpmmacrodir}
+install -m 644  rpm/macros.d/macros.rpmautospec %{buildroot}%{rpmmacrodir}/
+%endif
+
+%check
+%pytest -v \
+%if %{with xdist}
+--numprocesses=auto
+%endif
+
+%files -n python3-%{srcname} -f %{pyproject_files}
+%doc README.rst
+
+%files -n %{srcname}
+%{_bindir}/rpmautospec
+%{_mandir}/man1/rpmautospec.1*
+
+%if %{with rpmmacropkg}
+%files -n rpmautospec-rpm-macros
+%{rpmmacrodir}/macros.rpmautospec
+%endif
+
+%changelog
+%autochangelog

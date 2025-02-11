@@ -1,8 +1,0 @@
-git
-pyyaml
-epel-release
-
-
-# from epel
-python3-pydantic
-python3-flask
