@@ -1,4 +1,68 @@
-### Configuration File Format
+## Deployment Guide
+
+#### Prerequisites
+
+Before deploying, ensure the following dependencies and configurations are met:
+
+- Ansible installed on the control node.
+- SSH access to the target server.
+- Required credentials stored securely in `ansible/roles/deploy/vars/main.yml`.
+- Ansible inventory file (`inventory.ini`) with the target server IP and SSH key.
+
+#### Deployment Steps
+
+##### 1. Define Required Variables
+
+Ensure the following variables are set in `ansible/roles/deploy/vars/main.yml`:
+
+```yaml
+---
+# CAS credentials for notarization
+deploy_cas_signer_id: "your_signer_id"
+deploy_cas_api_key: "your_api_key"
+deploy_immudb_username: "your_username"
+deploy_immudb_password: "your_password"
+deploy_immudb_database: "your_database"
+deploy_immudb_address: "your_immudb_address"
+
+# Slack credentials to send notifications
+deploy_slack_token: "your_slack_token"
+
+# Git authentication key
+deploy_auth_key: "your_git_auth_key"
+
+# SSH keys for git.almalinux.org
+deploy_ssh_private_key: "your_private_key"
+deploy_ssh_public_key: "your_public_key"
+```
+
+##### 2. Configure Ansible Inventory
+
+Define the target hosts in your Ansible inventory file (e.g., `inventory.ini`):
+
+```ini
+[deploy_servers]
+your-server-ip ansible_user=your_user ansible_ssh_private_key_file=your_key
+```
+
+##### 3. Running the Deployment
+
+Execute the deployment playbook with:
+
+```bash
+ansible-playbook -i inventory.ini main.yml
+```
+
+##### 4. Verification
+
+After deployment, verify that the service is running properly:
+
+```bash
+systemctl status almalinux-autopatch.service
+```
+
+
+## Configuration File Format
 
 #### 1. actions (Main Block)
 

@@ -13,6 +13,7 @@ rpmspec_definition = {
     "forgemeta": "%{nil}",
     "gometa": "%{nil}",
     "efi_has_alt_arch": "0",
+    "dist": "%{nil}",
 }
 
 class PatchDirectiveType(Enum):
