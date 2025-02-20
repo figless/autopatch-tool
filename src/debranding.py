@@ -8,7 +8,13 @@ BRANCH_NOT_MODIFIED = "Branch is not modified"
 PACKAGE_NOT_MODIFIED = "Package is not modified"
 SUCCESS = "Debranding applied"
 
-def apply_modifications(package, branch, set_custom_tag: str = ""):
+
+def apply_modifications(
+    package,
+    branch,
+    set_custom_tag: str = "",
+    no_tag: bool = False
+):
     autopatch_working_dir = os.getcwd() + "/autopatch-namespace"
     rpms_working_dir = os.getcwd() + "/rpms-namespace"
     al_branch = branch.replace("c", "a", 1)
@@ -38,15 +44,16 @@ def apply_modifications(package, branch, set_custom_tag: str = ""):
             tag = set_custom_tag
         git_repo.pull()
         upstream_hash = git_repo.get_sbom_hash()
-        
+
         git_repo.reset_to_base_branch(branch, al_branch, no_commit=True)
         config.apply_actions(rpms_working_dir + f"/{package}")
-        
+
         changelog_entries, name, email = config.get_changelog()
 
         git_repo.commit(changelog_entries, name, email)
-        git_repo.create_tag(tag)
+        if not no_tag:
+            git_repo.create_tag(tag)
         git_repo.push(al_branch)
         git_repo.notarize_commit(upstream_hash)
-    
+
     return SUCCESS

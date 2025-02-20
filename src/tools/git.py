@@ -11,8 +11,12 @@ from tools.tools import (
     load_cas_credentials,
 )
 
+ALLOW_NOTARIZATION = os.getenv("ALLOW_NOTARIZATION", "true").lower() == "true"
 
 class DirectoryManager:
+    """
+    Context manager for changing the current working directory
+    """
     def __init__(self, path):
         self.new_path = Path(path)
         self.previous_path = Path.cwd()
@@ -37,10 +41,14 @@ class GitRepositoryError(Exception):
         super().__init__(message)
 
 class GitRepository:
+    """
+    Class for working with git repositories
+    """
     def __init__(self, url, clone: bool = True):
         self.url = url
         self.name = self.url.split("/")[-1].replace(".git", "")
-        self.immudb_wrapper = ImmudbWrapper(**load_cas_credentials())
+        if ALLOW_NOTARIZATION:
+            self.immudb_wrapper = ImmudbWrapper(**load_cas_credentials())
 
         if clone:
             self.__clone()
@@ -100,6 +108,8 @@ class GitRepository:
         self.run_in_repo("git", "checkout", replacing_branch, "--", file)
 
     def get_sbom_hash(self) -> str:
+        if not ALLOW_NOTARIZATION:
+            return ""
         try:
             result = self.immudb_wrapper.authenticate_git_repo(self.name)
             matching_tag_is_authenticated = result.get('verified', False)
@@ -113,10 +123,12 @@ class GitRepository:
         except Exception as e:
             logger.error(f"Failed to authenticate git repo: {e}")
             raise GitRepositoryError(f"Failed to authenticate git repo: {e}")
-        
+
         return matching_immudb_hash
 
     def notarize_commit(self, upstream_hash: str = None) -> str:
+        if not ALLOW_NOTARIZATION:
+            return ""
         response = self.immudb_wrapper.notarize_git_repo(
             self.name,
             user_metadata={'sbom_api_ver': '0.2', 'upstream_commit_sbom_hash': upstream_hash},
@@ -171,15 +183,18 @@ class GitRepository:
         self.replace_file(base_branch, '.')
 
         if not no_commit:
-            self.commit(f"Merge '{base_branch}' into '{target_branch}'")
-    
+            self.commit([f"Merge '{base_branch}' into '{target_branch}'"], "AlmaLinux Autopatch", "")
+
     def get_latest_tag(self):
         with DirectoryManager(self.name):
-            return run_command(["git", "describe", "--tags"]).stdout.strip()
+            return run_command(["git", "describe", "--tags", "--abbrev=0"]).stdout.strip()
 
 
 
 class GitAlmaLinux:
+    """
+    Class for working with AlmaLinux git autopatch namespace
+    """
     _almalinux_git = 'git.almalinux.org'
     _almalinux_git_url = f'https://{_almalinux_git}'
     _almalinux_git_api = f'https://{_almalinux_git}/api/v1'  # https://git.almalinux.org/api/v1

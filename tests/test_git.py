@@ -117,7 +117,7 @@ def test_git_commit():
     # Создаем файл и коммитим его
     new_file = Path("test_repo/new_file.txt")
     new_file.write_text("Test content")
-    repo.commit("Add new_file.txt")
+    repo.commit(["Add new_file.txt"], "test", "test@test.test")
 
     result = subprocess.run(
         ["git", "log", "--oneline"],

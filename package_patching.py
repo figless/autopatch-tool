@@ -35,13 +35,27 @@ def get_args():
         required=False,
         default=""
     )
+    parser.add_argument(
+        '--no-tag',
+        action='store_true',
+        help='Disable tagging',
+        required=False
+    )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Enable debug output',
+        required=False,
+    )
     args = parser.parse_args()
     return args
 
 
 def main():
     args = get_args()
-    apply_modifications(args.package, args.branch, args.set_custom_tag)
+    if args.debug:
+        logger.setLevel(DEBUG)
+    apply_modifications(args.package, args.branch, args.set_custom_tag, args.no_tag)
 
 if __name__ == "__main__":
     main()

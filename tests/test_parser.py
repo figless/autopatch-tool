@@ -609,7 +609,7 @@ def test_delete_files_action():
               - run_script:
                   - script: "source"
             """,
-            {"run_script": [{"target": "", "script": "source"}]},
+            {"run_script": [{"target": "", "script": "source", "cwd": "rpms"}]},
             None
         ),
         ("""

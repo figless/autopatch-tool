@@ -18,7 +18,6 @@ from tools.webserv_tools import (
     jsonify_response,
     get_name_from_payload,
     get_branch_from_payload,
-    get_tag_from_payload,
 )
 import tools.slack
 
@@ -62,7 +61,6 @@ def debrand_packages():
         result = apply_modifications(
             repo_name,
             branch,
-            get_tag_from_payload(request.json).replace("imports/c", "changed/a", 1),
         )
         if result == SUCCESS:
             tools.slack.success_message(repo_name, branch)
