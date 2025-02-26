@@ -17,20 +17,24 @@ def apply_modifications(
 ):
     autopatch_working_dir = os.getcwd() + "/autopatch-namespace"
     rpms_working_dir = os.getcwd() + "/rpms-namespace"
-    al_branch = branch.replace("c", "a", 1)
-
+    config_branch = al_branch = branch.replace("c", "a", 1)
 
     if package not in GitAlmaLinux.get_list_of_modified_packages():
         logger.info(f"Package {package} is not modified")
         return PACKAGE_NOT_MODIFIED
 
-    if al_branch not in GitAlmaLinux.get_branches_from_package(package):
+    config_branches = GitAlmaLinux.get_branches_from_package(package)
+
+    if config_branch not in config_branches and '-beta' in config_branch:
+        config_branch = al_branch.replace("-beta", "")
+
+    if config_branch not in config_branches:
         logger.info(f"Branch {al_branch} does not exist")
         return BRANCH_NOT_MODIFIED
 
     with DirectoryManager(autopatch_working_dir):
         config_repo = GitRepository(f"git@{GitAlmaLinux._almalinux_git}:{GitAlmaLinux._autopatch_namespace}/{package}.git")
-        config_repo.checkout_branch(al_branch)
+        config_repo.checkout_branch(config_branch)
         config_repo.pull()
 
     config = ConfigReader(autopatch_working_dir + f"/{package}/config.yaml")
