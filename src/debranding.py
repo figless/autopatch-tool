@@ -13,11 +13,15 @@ def apply_modifications(
     package,
     branch,
     set_custom_tag: str = "",
-    no_tag: bool = False
+    no_tag: bool = False,
+    target_branch: str = "",
 ):
     autopatch_working_dir = os.getcwd() + "/autopatch-namespace"
     rpms_working_dir = os.getcwd() + "/rpms-namespace"
-    config_branch = al_branch = branch.replace("c", "a", 1)
+    config_branch = al_branch = target_branch
+
+    if not target_branch:
+        config_branch = al_branch = branch.replace("c", "a", 1)
 
     if package not in GitAlmaLinux.get_list_of_modified_packages():
         logger.info(f"Package {package} is not modified")
@@ -43,7 +47,7 @@ def apply_modifications(
         git_repo = GitRepository(f"git@{GitAlmaLinux._almalinux_git}:{GitAlmaLinux._rpms_namespace}/{package}.git")
         git_repo.checkout_branch(branch)
         if not set_custom_tag:
-            tag = git_repo.get_latest_tag().replace("imports/c", "changed/a", 1) + config.get_release_suffix()
+            tag = git_repo.get_latest_tag().replace(f"imports/{branch}", f"changed/{al_branch}", 1) + config.get_release_suffix()
         else:
             tag = set_custom_tag
         git_repo.pull()

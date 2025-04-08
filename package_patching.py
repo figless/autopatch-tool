@@ -29,6 +29,13 @@ def get_args():
         required=True,
     )
     parser.add_argument(
+        '-t',
+        '--target-branch',
+        type=str,
+        help='Target branch to apply changes to, if not set, it will generated automatically, by replacing "c" with "a". Also this branch will be used to read a config file',
+        required=False,
+    )
+    parser.add_argument(
         '--set-custom-tag',
         type=str,
         help='Set custom tag, otherwise it will be generated automatically',
@@ -55,7 +62,7 @@ def main():
     args = get_args()
     if args.debug:
         logger.setLevel(DEBUG)
-    apply_modifications(args.package, args.branch, args.set_custom_tag, args.no_tag)
+    apply_modifications(args.package, args.branch, args.set_custom_tag, args.no_tag, args.target_branch)
 
 if __name__ == "__main__":
     main()

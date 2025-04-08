@@ -458,8 +458,7 @@ class AddFilesAction(BaseAction):
     def execute(self, package_path: Path):
         for entry in self.entries:
             package_name = package_path.name
-            is_patches_file = any(Path(package_path).glob("*.patches"))
-
+            is_patches_file = any(Path(package_path).rglob("*.patches"))
             if entry.type == "patch":
                 directive_type = tools.rpm.DirectiveType.PATCH
                 if is_patches_file:
